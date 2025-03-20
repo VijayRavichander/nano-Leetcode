@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  type     String @default("user")
+
+  // Secondary
+  submissions Submission[]
+}
+
+model ProblemInfo {
+  id                String   @id @default(cuid())
+  metaData          String
+  slug              String   @unique
+  type              String   @default("None")
+  solved            Int      @default(0)
+  createdAt         DateTime @default(now())
+  sampleTestCase    String[]
+  functionCode      String // Function Code
+
+  defaultCode DefaultCode[]
+  submissions Submission[]
+}
+
+model Language {
+  id        Int      @id @default(autoincrement())
+  name      String
+  judge0Id  Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DefaultCode {
+  id              String      @id @default(cuid())
+  languageId      Int
+  code            String // Entire Code
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  testcaseInputs  String[]
+  sampletestOutputs String[]
+
+  // Secondary
+  problemId       String
+  problem         ProblemInfo @relation(fields: [problemId], references: [id])
+}
+
+model Submission {
+  id         String           @id @default(cuid())
+  code       String
+  languageId Int
+  status     SubmissionResult @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  // Secondary
+  problemId String
+  userId    String
+  problem   ProblemInfo @relation(fields: [problemId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+  testCase  TestCase[]
+}
+
+model TestCase {
+  id          String           @id @default(cuid())
+  judge0Token String
+  memory      String
+  time        String
+  status      SubmissionResult @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  // Secondary
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+}
+
+enum SubmissionResult {
+  ACCEPTED
+  REJECTED
+  PENDING
+  TLE
+  COMPILATIONERROR
+  RUNTIMEERROR
+  INTERNALERROR
+}
