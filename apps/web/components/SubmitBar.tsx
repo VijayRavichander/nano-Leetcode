@@ -9,15 +9,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { BACKEND_URL } from "@/app/config";
+import axios from "axios";
 const SubmitBar = ({code} : {code: string}) => {
 
 
-  const runCode = () => {
+  const runCode = async () => {
+    const res = await axios.post(`${BACKEND_URL}/v1/run`, {
+      slug: 'two-sum',
+      code: code, 
+      language: 'cpp'
+    })
     
   }
+
+  const submitCode = async () => {
+    const res = await axios.post(`${BACKEND_URL}/v1/submit`, {
+      slug: 'two-sum',
+      code: code, 
+      language: 'cpp'
+    })
+    
+  }
+
   return (
-    <div className="flex justify-between bg-[#1E1E1E] text-white p-2">
+    <div className="flex justify-between bg-[#1b1b14] text-white p-2">
       {/* Buttons */}
       <div>
         <div>
@@ -35,10 +51,10 @@ const SubmitBar = ({code} : {code: string}) => {
               </Select>
             </div>
             <div>
-              <Button className="bg-blue-400" onClick={runCode()}><PlayIcon />Run</Button>
+              <Button className="bg-blue-400" onClick={runCode}><PlayIcon />Run</Button>
             </div>
             <div>
-              <Button className="bg-green-400"><RocketIcon />Submit</Button>
+              <Button className="bg-green-400" onClick={submitCode}><RocketIcon />Submit</Button>
             </div>  
           </div>
         </div>

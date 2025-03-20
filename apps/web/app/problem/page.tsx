@@ -6,7 +6,7 @@ import React, { useState, useCallback } from "react";
 
 function App() {
   const [isResizing, setIsResizing] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(500);
+  const [sidebarWidth, setSidebarWidth] = useState(600);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     setIsResizing(true);

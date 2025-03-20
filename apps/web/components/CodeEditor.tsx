@@ -6,6 +6,7 @@ const defaultCode = "int sum(int num1, int num2) { \n    // Implementation goes 
 const CodeEditor = () => {
 
   const [code, setCode] = useState(defaultCode);
+  const [language, setLanguage] = useState('cpp')
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
@@ -20,7 +21,7 @@ const CodeEditor = () => {
       <div className="flex-1">
         <Editor
           height="100%"
-          defaultLanguage="cpp"
+          defaultLanguage={language}
           theme="vs-dark"
           value={code}
           onChange={handleEditorChange}
