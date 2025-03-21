@@ -94,7 +94,7 @@ app.post("/v1/submit", async (req, res) => {
   const userCode = req.body.code;
 
   const problemInfo = await prismaClient.problemInfo.findFirst({
-    where: {
+  where: {
       slug: slug,
     },
   });
@@ -136,9 +136,11 @@ app.post("/v1/submit", async (req, res) => {
 
   const judgeZeroTokens = judgeZeroRes.data;
 
+
+
   const submissionId = await prismaClient.submission.create({
     data: {
-      code: cleanCode,
+      code: userCode,
       languageId: 54,
       tokens: judgeZeroTokens,
       problemId: problemInfo?.id,
@@ -148,8 +150,7 @@ app.post("/v1/submit", async (req, res) => {
 
   // After the loop, you can send the results
   res.status(200).json({
-    judgeZeroTokens,
-    submissionId,
+    submissionId: submissionId.id,
   });
 });
 
@@ -236,7 +237,7 @@ app.get("/v1/getsubmissionstatus", async (req, res) => {
 
   const submissionRes = await prismaClient.submission.findFirst({
     where: {
-      id: submissionId as string,
+      id: (submissionId)
     },
   });
 
@@ -253,17 +254,37 @@ app.get("/v1/getsubmissionstatus", async (req, res) => {
       status: status
     }
   })
-  
 
   res.json({
-    data: status,
+    status,
   });
 });
 // Get Submission Status of an Problem
-app.get("/v1/submissioninfo/:id", async (req, res) => {});
+app.get("/v1/submissioninfo", async (req, res) => {});
 
 // Get ALL the submission status of the problem
-app.get("/v1/submissioninfobulk/:id", async (req, res) => {});
+app.get("/v1/submissioninfobulk", async (req, res) => {
+
+    const problemId = req.query.id as string
+    // const userId = req.query.userid
+    const userId = USERID
+
+    const submissions = await prismaClient.submission.findMany({
+      where: {
+        problemId,
+        userId
+      }, 
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 5
+    })
+
+    res.status(200).json({
+      submissions
+    })
+
+});
 
 app.post("/v1/addtest", async (req, res) => {
   const id = req.body.id;

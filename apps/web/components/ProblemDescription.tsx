@@ -25,7 +25,7 @@ function ProblemDescription({
 
   return (<>
       <div
-      className={`${tab == "problem" ? "" : "hidden"} border-r border-gray-700 overflow-y-auto p-6`}
+      className={`${tab == "problem" ? "" : "hidden"}  overflow-y-auto p-6`}
       style={{ width: `${sidebarWidth}px`}}
     >
       {/* Header */}

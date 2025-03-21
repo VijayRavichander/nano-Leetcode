@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import { useParams } from 'next/navigation';
 import { useCodeStore, useSlugStore } from "@/lib/store/codeStore";
+import { useProblemIDStore } from "@/lib/store/uiStore";
 
 function App() {
   const [isResizing, setIsResizing] = useState(false);
@@ -19,7 +20,7 @@ function App() {
   const { problemId } = useParams();
   const {c, setC} = useCodeStore();
   const {slug, setSlug} = useSlugStore();
-
+  const {problemIDStore, setProblemIDStore} = useProblemIDStore();
   // Data fetching moved from ProblemDescription to here
   useEffect(() => {
     const getProblem = async () => {
@@ -38,6 +39,7 @@ function App() {
         setMetaData(metaData);
         setSampleTestCases(testCases);
         setC(data.functionCode);
+        setProblemIDStore(res.data.problemInfo.id);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching problem data:", error);
@@ -100,7 +102,7 @@ function App() {
         className="w-1 cursor-col-resize bg-transparent hover:bg-gray-700 active:bg-gray-600 transition-colors"
         onMouseDown={startResizing}
       />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col border-l border-gray-700">
         <CodeEditor sampleTestCases={sampleTestCases}/>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useCodeStore, useLangStore, useTestCaseStore } from "@/lib/store/codeStore";
 import SubmissionResult from "./SubmissionResult";
+import ToolBar from "./ToolBar";
 
 const CodeEditor = ({ sampleTestCases }: { sampleTestCases: any }) => {
   const { c, setC } = useCodeStore();
@@ -19,7 +20,9 @@ const CodeEditor = ({ sampleTestCases }: { sampleTestCases: any }) => {
 
   return (
     <>
-      {/* <div className="h-15"><SubmitBar code={code} /></div> */}
+      <div className="h-10 bg-black/30">
+        <ToolBar/>
+      </div>
       <div className="flex-1 mt-4">
         <Editor
           height="100%"

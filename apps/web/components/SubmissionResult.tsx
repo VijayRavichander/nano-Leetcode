@@ -1,16 +1,14 @@
 import { useTestCaseStore } from "@/lib/store/codeStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Circle } from "lucide-react";
-
+import { CheckIcon, Circle, X } from "lucide-react";
 
 const SubmissionResult = ({ sampleTestCases }: { sampleTestCases: any }) => {
+  const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
 
-
-    const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
-
-    return (<>
-          {/* Console Output */}
-          <div className="h-48 border-t border-gray-700 bg-black/20">
+  return (
+    <>
+      {/* Console Output */}
+      <div className="h-48 border-t border-gray-700 bg-black/20">
         <div className="p-4 font-mono text-sm">
           <Tabs defaultValue="0" className="font-mono text-sm text-gray-300">
             <div className=" bg-black/10 rounded-2xl ">
@@ -21,9 +19,11 @@ const SubmissionResult = ({ sampleTestCases }: { sampleTestCases: any }) => {
                   if (testCaseStatus && testCaseStatus.length != 0) {
                     console.log(testCaseStatus[index]);
                     if (testCaseStatus[index]!.description === "Accepted") {
-                      circleColor = "text-green-500";
-                    } else if (testCaseStatus[index]!.description !== "Accepted") {
-                      circleColor = "text-red-500";
+                      circleColor = "green";
+                    } else if (
+                      testCaseStatus[index]!.description !== "Accepted"
+                    ) {
+                      circleColor = "red";
                     }
                   }
 
@@ -35,13 +35,12 @@ const SubmissionResult = ({ sampleTestCases }: { sampleTestCases: any }) => {
                     >
                       <div>Test Case {index + 1}</div>
                       <div>
-                        <Circle
-                          className={
-                            circleColor.length > 0
-                              ? `${circleColor}`
-                              : `hidden`
-                          }
-                        />
+                        {circleColor === "green" && (
+                          <CheckIcon className="ml-2 w-5 h-5 text-green-500" />
+                        )}
+                        {circleColor === "red" && (
+                          <X className="ml-2 w-5 h-5 text-red-500" />
+                        )}
                       </div>
                     </TabsTrigger>
                   );
@@ -49,7 +48,7 @@ const SubmissionResult = ({ sampleTestCases }: { sampleTestCases: any }) => {
               </TabsList>
             </div>
             <div className="my-3 bg-black/40 rounded-2xl px-5">
-              {sampleTestCases.map((testcase, index: number) => (
+              {sampleTestCases.map((testcase: any, index: number) => (
                 <TabsContent
                   key={index}
                   value={index.toString()}
@@ -62,7 +61,8 @@ const SubmissionResult = ({ sampleTestCases }: { sampleTestCases: any }) => {
           </Tabs>
         </div>
       </div>
-    </>)
-}
+    </>
+  );
+};
 
 export default SubmissionResult;
