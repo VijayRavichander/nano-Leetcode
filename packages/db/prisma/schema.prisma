@@ -24,25 +24,17 @@ model User {
 }
 
 model ProblemInfo {
-  id             String   @id @default(cuid())
+  id             String        @id @default(cuid())
   metaData       String
-  slug           String   @unique
-  type           String   @default("None")
-  solved         Int      @default(0)
-  createdAt      DateTime @default(now())
+  slug           String        @unique
+  type           String        @default("None")
+  solved         Int           @default(0)
+  createdAt      DateTime      @default(now())
   sampleTestCase String[]
+  testCases      String[]
   functionCode   String // Function Code
-
-  defaultCode DefaultCode[]
-  submissions Submission[]
-}
-
-model Language {
-  id        Int      @id @default(autoincrement())
-  name      String
-  judge0Id  Int      @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  defaultCode    DefaultCode[]
+  submissions    Submission[]
 }
 
 model DefaultCode {
@@ -65,26 +57,12 @@ model Submission {
   status     SubmissionResult @default(PENDING)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
-
+  tokens     Json
   // Secondary
   problemId String
   userId    String
   problem   ProblemInfo @relation(fields: [problemId], references: [id])
   user      User        @relation(fields: [userId], references: [id])
-  testCase  TestCase[]
-}
-
-model TestCase {
-  id          String           @id @default(cuid())
-  judge0Token String
-  memory      String
-  time        String
-  status      SubmissionResult @default(PENDING)
-  createdAt   DateTime         @default(now())
-
-  // Secondary
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id])
 }
 
 enum SubmissionResult {

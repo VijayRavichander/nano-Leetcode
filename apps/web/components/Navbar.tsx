@@ -1,5 +1,5 @@
 "use client";
-import { PlayIcon, RocketIcon } from "lucide-react";
+import { Loader2, Loader2Icon, PlayIcon, RocketIcon } from "lucide-react";
 import { Button } from "./ui/button";
 
 import {
@@ -9,19 +9,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import axios from "axios";
+import { BACKEND_URL } from "@/app/config";
+import { useCodeStore, useLangStore, useSlugStore, useTestCaseStore } from "@/lib/store/codeStore";
+import { useState } from "react";
 
 const NavBar = () => {
+  const c = useCodeStore((state) => state.c);
+  const { lang, setLang } = useLangStore();
+  const { testCaseStatus, setTestCaseStatus} = useTestCaseStore();
+  const slug = useSlugStore((state) => state.slug);
+
+
+  const runCode = async () => {
+    setIsRunning(true)
+    const res = await axios.post(`${BACKEND_URL}/v1/run`, {
+      slug: slug,
+      code: c,
+      language: lang,
+    });
+
+    const data = res.data.result
+    setTestCaseStatus(data)
+    setIsRunning(false)
+  };
+
+  const submitCode = async () => {
+    // const res = await axios.post(`${BACKEND_URL}/v1/submit`, {
+    //   slug: slug,
+    //   code: c,
+    //   language: lang,
+    // });
+
+    setIsSubmitting(true)
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    setIsSubmitting(false)
+  };
+
+  const [isRunning, setIsRunning] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+
   return (
     <div className="flex justify-between bg-black text-white p-2">
       {/* Logo  */}
-      <div className="text-center text-3xl text-purple-600">LiteCode</div>
+      <div className="text-center font-bold text-3xl text-purple-400">LiteCode</div>
 
       {/* Buttons */}
-      {/* <div>
+      <div>
         <div>
           <div className="flex justify-between gap-2">
             <div>
-              <Select>
+              <Select
+                onValueChange={(value) => setLang(value)}
+                defaultValue="cpp"
+              >
                 <SelectTrigger className="w-[180px] focus:ring-0 focus:outline-none border-[2px] border-blue-200 shadow-none">
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
@@ -33,14 +75,21 @@ const NavBar = () => {
               </Select>
             </div>
             <div>
-              <Button className="bg-blue-400"><PlayIcon />Run</Button>
+              <Button className="bg-blue-400" onClick={runCode}>
+                {isRunning ? <Loader2 className="animate-spin"/> : <PlayIcon />}
+                {isRunning ? "Running...": "Run"}
+              </Button>
             </div>
             <div>
-              <Button className="bg-green-400"><RocketIcon />Submit</Button>
-            </div>  
+              <Button className="bg-emerald-500" onClick={submitCode}>
+                
+                {isSubmitting ? <Loader2 className="animate-spin" /> : <RocketIcon />}
+                {isSubmitting ? "Submitting...": "Submit"}
+              </Button>
+            </div>
           </div>
         </div>
-      </div> */}
+      </div>
       {/* Premium & Signup */}
       <div className="flex justify-between gap-2">
         <Button className="bg-purple-600">Pro</Button>

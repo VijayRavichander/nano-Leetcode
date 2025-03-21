@@ -11,8 +11,12 @@ import {
 } from "@/components/ui/select";
 import { BACKEND_URL } from "@/app/config";
 import axios from "axios";
+import { useCodeStore } from "@/lib/store/codeStore";
+
+
 const SubmitBar = ({code} : {code: string}) => {
 
+  const { c, setC } = useCodeStore();
 
   const runCode = async () => {
     const res = await axios.post(`${BACKEND_URL}/v1/run`, {
