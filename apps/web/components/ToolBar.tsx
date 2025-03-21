@@ -17,13 +17,13 @@ import { useCodeStore } from "@/lib/store/codeStore";
 const ToolBar = () => {
 
   return (
-    <div className="flex justify-between bg-[#1b1b14] text-white p-2">
+    <div className="flex justify-between bg-[#1b1b14] text-white p-2 py-2">
       {/* Buttons */}
       <div>
         <span></span>
       </div>
       <div>
-        <Button><RefreshCcwDotIcon/>  Reset</Button>
+        <Button className=" bg-blue-300 text-blue-400"><RefreshCcwDotIcon className="w-[2px] h-[2px]"/><span className="text-xs">Reset</span></Button>
       </div>
     </div>
   );

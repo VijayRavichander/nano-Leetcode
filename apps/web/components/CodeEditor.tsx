@@ -7,7 +7,7 @@ import { useCodeStore, useLangStore, useTestCaseStore } from "@/lib/store/codeSt
 import SubmissionResult from "./SubmissionResult";
 import ToolBar from "./ToolBar";
 
-const CodeEditor = ({ sampleTestCases }: { sampleTestCases: any }) => {
+const CodeEditor = ({ problemDesc }: { problemDesc: any }) => {
   const { c, setC } = useCodeStore();
   const { lang, setLang } = useLangStore();
   const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
@@ -20,10 +20,10 @@ const CodeEditor = ({ sampleTestCases }: { sampleTestCases: any }) => {
 
   return (
     <>
-      <div className="h-10 bg-black/30">
+      <div className="h-13 bg-black/30">
         <ToolBar/>
       </div>
-      <div className="flex-1 mt-4">
+      <div className="flex-1 border-t border-gray-500 max-h-7/12">
         <Editor
           height="100%"
           defaultLanguage={lang}
@@ -41,8 +41,8 @@ const CodeEditor = ({ sampleTestCases }: { sampleTestCases: any }) => {
           }}
         />
       </div>
-      <div>
-          <SubmissionResult sampleTestCases={sampleTestCases} />
+      <div className="border-t border-gray-700 bg-black/20 flex-1">
+          <SubmissionResult problemDesc={problemDesc} />
       </div>
 
     </>

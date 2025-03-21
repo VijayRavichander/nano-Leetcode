@@ -25,25 +25,24 @@ model User {
 
 model ProblemInfo {
   id             String        @id @default(cuid())
-  metaData       String
+  metaData       Json
   slug           String        @unique
   type           String        @default("None")
   solved         Int           @default(0)
   createdAt      DateTime      @default(now())
-  sampleTestCase String[]
-  testCases      String[]
-  functionCode   String // Function Code
+  sampleTestCase Json[]
+  testCases      Json[]
+  functionCode   Json // Function Code
   defaultCode    DefaultCode[]
   submissions    Submission[]
 }
 
 model DefaultCode {
   id         String   @id @default(cuid())
-  languageId Int
-  code       String // Entire Code
+  code       Json // Entire Code
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  testCases  String[]
+  testCases  Json
 
   // Secondary
   problemId String
@@ -52,12 +51,12 @@ model DefaultCode {
 
 model Submission {
   id         String           @id @default(cuid())
-  code       String
+  code       Json
   languageId Int
   status     SubmissionResult @default(PENDING)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
-  tokens     Json
+  tokens     Json[]
   // Secondary
   problemId String
   userId    String

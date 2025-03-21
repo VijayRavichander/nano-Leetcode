@@ -2,6 +2,7 @@ import express from "express";
 import { prismaClient } from "db";
 import cors from "cors";
 import axios from "axios";
+import {checkSubmissionStatus} from "./utils"
 
 const PORT = process.env.PORT || 3010;
 
@@ -13,53 +14,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
 
 
-
-const checkSubmissionStatus = async (tokenQuery: string) => {
-  while (true) {
-    try {
-      const response = await axios.get(
-        `${JUDGE0_URL}/submissions/batch?tokens=${tokenQuery}&base64_encoded=false`,
-        {
-          headers: {
-            "x-rapidapi-key": JUDGE0_API_KEY,
-            "x-rapidapi-host": JUDGE0_HOST,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const submissions = response.data.submissions;
-
-      // Check statuses
-      let allAccepted = true;
-      for (const submission of submissions) {
-        const status = submission.status.description;
-
-        if (status === "In Queue" || status === "Processing") {
-          console.log("Still processing... Retrying in 2 seconds.");
-          await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
-          allAccepted = false;
-          break; // Exit loop and retry the request
-        }
-
-        if (status !== "Accepted") {
-          return "REJECTED"; // If any status is not "Accepted", return "Failed"
-        }
-      }
-
-      if (allAccepted) {
-        return "ACCEPTED";
-      }
-    } catch (error) {
-      console.error("Error fetching submission status:", error);
-      return "REJECTED";
-    }
-  }
-
-}
 app.get("/health", (req, res) => {
   res.status(200).json({
     message: "All Good",
@@ -76,9 +32,6 @@ app.get("/v1/getproblem", async (req, res) => {
     },
   });
 
-  if (problemInfo && problemInfo.functionCode) {
-    problemInfo.functionCode = problemInfo.functionCode.replace(/\\n/g, "\n");
-  }
 
   res.status(200).json({
     problemInfo,
@@ -101,23 +54,18 @@ app.post("/v1/submit", async (req, res) => {
 
   let boilerplateData = await prismaClient.defaultCode.findFirst({
     where: {
-      problemId: problemInfo.id,
+      problemId: problemInfo!.id,
     },
   });
 
-  const testCases = boilerplateData?.testCases.slice(0, 6).map((testcase) => {
-    return JSON.parse(testcase);
-  });
 
-  const cleanCode = boilerplateData?.code.replace(/\\n/g, "\n");
+  const finalCode = boilerplateData.code.cpp.replace("##USER_CODE_HERE##", userCode); // NEED TO REPLACE CPP
 
-  const finalCode = cleanCode.replace("##USER_CODE_HERE##", userCode);
-
-  const submissions = testCases?.map((testcase, index) => ({
+  const submissions = boilerplateData?.testCases?.map((testcase, index) => ({
     source_code: finalCode,
     language_id: 54,
-    stdin: testcase.Input,
-    expected_output: testcase.Output,
+    stdin: testcase.input,
+    expected_output: testcase.output,
   }));
 
   const judgeZeroRes = await axios.post(
@@ -135,7 +83,6 @@ app.post("/v1/submit", async (req, res) => {
   );
 
   const judgeZeroTokens = judgeZeroRes.data;
-
 
 
   const submissionId = await prismaClient.submission.create({
@@ -171,14 +118,8 @@ app.post("/v1/run", async (req, res) => {
     },
   });
 
-  const testCases = problemInfo?.testCases.map((testcase) => {
-    return JSON.parse(testcase);
-  });
-
-  const cleanCode = boilerplateData?.code.replace(/\\n/g, "\n");
-
-  const finalCode = cleanCode.replace("##USER_CODE_HERE##", userCode);
-
+  const finalCode = boilerplateData?.code.cpp.replace("##USER_CODE_HERE##", userCode); // NEED TO CHANGE CPP HERE
+  const testCases = problemInfo?.testCases 
   const results = [];
 
   for (const testcase of testCases) {
@@ -188,8 +129,8 @@ app.post("/v1/run", async (req, res) => {
         {
           source_code: finalCode,
           language_id: 54,
-          stdin: testcase.Input,
-          expected_output: testcase.Output,
+          stdin: testcase.input,
+          expected_output: testcase.output,
         },
         {
           headers: {
@@ -229,9 +170,6 @@ app.post("/v1/run", async (req, res) => {
   });
 });
 
-
-
-
 app.get("/v1/getsubmissionstatus", async (req, res) => {
   const submissionId = req.query.submissionId;
 
@@ -259,8 +197,35 @@ app.get("/v1/getsubmissionstatus", async (req, res) => {
     status,
   });
 });
-// Get Submission Status of an Problem
-app.get("/v1/submissioninfo", async (req, res) => {});
+
+// // Get Submission Status of an Problem
+// app.get("/v1/submissioninfo", async (req, res) => {});
+
+app.get("/v1/getproblems", async (req, res) => {
+
+  try{
+    const problems = await prismaClient.problemInfo.findMany({
+      where: {
+
+      }, select: {
+        metaData: true,
+        slug: true
+      }
+    })
+  
+    res.status(200).json({
+      problems
+    })
+  }catch(error){
+    console.error("Error while retreiving problems", error);
+    res.status(504).json({
+      message: "Internal Server Error"
+    })
+  }
+
+})
+
+
 
 // Get ALL the submission status of the problem
 app.get("/v1/submissioninfobulk", async (req, res) => {
@@ -286,6 +251,8 @@ app.get("/v1/submissioninfobulk", async (req, res) => {
 
 });
 
+
+// Add a NEW Problem to the DB
 app.post("/v1/addtest", async (req, res) => {
   const id = req.body.id;
   const payload = req.body.testCases;
@@ -307,6 +274,42 @@ app.post("/v1/addtest", async (req, res) => {
 
   res.json({ updateData });
 });
+
+app.post("/v1/addProblem", async (req, res) => {
+  try {
+    const { problemInfo, code, testCases } = req.body;
+    const { metaData, slug, type, solved, sampleTestCase, functionCode, testCases: testCasePI } = problemInfo;
+
+    // Store problem information
+    const newProblemInfo = await prismaClient.problemInfo.create({
+      data: {
+        metaData,
+        slug,
+        type,
+        solved,
+        sampleTestCase,
+        functionCode,
+        testCases: testCasePI,
+      },
+    });
+
+    // Store default code
+    const newProblem = await prismaClient.defaultCode.create({
+      data: {
+        problemId: newProblemInfo.id,
+        code,
+        testCases,
+      },
+    });
+
+    res.json({ id: newProblem.id });
+
+  } catch (error) {
+    console.error("Error adding problem info:", error);
+    res.status(500).json({ error: "Failed to add problem info" });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log("Server is running in PORT:3010");

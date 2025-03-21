@@ -1,7 +1,7 @@
 "use client";
 import { Loader2, Loader2Icon, PlayIcon, RocketIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
 import {
   Select,
   SelectContent,
@@ -11,32 +11,39 @@ import {
 } from "@/components/ui/select";
 import axios from "axios";
 import { BACKEND_URL } from "@/app/config";
-import { useCodeStore, useLangStore, useSlugStore, useTestCaseStore } from "@/lib/store/codeStore";
+import {
+  useCodeStore,
+  useLangStore,
+  useSlugStore,
+  useTestCaseStore,
+} from "@/lib/store/codeStore";
 import { useState } from "react";
-import { useTab } from "@/lib/store/uiStore";
+import { useNavBarStore, useTab } from "@/lib/store/uiStore";
+import Link from "next/link";
 
 const NavBar = () => {
   const c = useCodeStore((state) => state.c);
   const { lang, setLang } = useLangStore();
-  const { testCaseStatus, setTestCaseStatus} = useTestCaseStore();
+  const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
   const slug = useSlugStore((state) => state.slug);
-  const {tab, setTab} = useTab();
+  const { tab, setTab } = useTab();
+  const { show, setShow } = useNavBarStore();
 
   const runCode = async () => {
-    setIsRunning(true)
+    setIsRunning(true);
     const res = await axios.post(`${BACKEND_URL}/v1/run`, {
       slug: slug,
       code: c,
       language: lang,
     });
 
-    const data = res.data.result
-    setTestCaseStatus(data)
-    setIsRunning(false)
+    const data = res.data.result;
+    setTestCaseStatus(data);
+    setIsRunning(false);
   };
 
   const submitCode = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     const res = await axios.post(`${BACKEND_URL}/v1/submit`, {
       slug: slug,
@@ -44,32 +51,45 @@ const NavBar = () => {
       language: lang,
     });
 
-    const submissionToken = res.data.submissionId
+    const submissionToken = res.data.submissionId;
 
-    const response = await axios.get(`${BACKEND_URL}/v1/getsubmissionstatus?submissionId=${submissionToken}`)
-    if(response.data.status == "ACCEPTED"){
+    const response = await axios.get(
+      `${BACKEND_URL}/v1/getsubmissionstatus?submissionId=${submissionToken}`
+    );
+    if (response.data.status == "ACCEPTED") {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#60A5FA', '#34D399', '#818CF8'],
+        colors: ["#60A5FA", "#34D399", "#818CF8"],
       });
     }
-    setTab("submissions")
-    setIsSubmitting(false)
+    setTab("submissions");
+    setIsSubmitting(false);
   };
 
-  const [isRunning, setIsRunning] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <div className="flex justify-between bg-black text-white p-2">
       {/* Logo  */}
-      <div className="text-center font-bold text-3xl text-purple-400">LiteCode</div>
+      {show ? (
+        <Link href="/problem">
+          <div className="text-center font-bold text-3xl text-purple-400">
+            LiteCode
+          </div>
+        </Link>
+      ) : (
+        <Link href="/">
+          <div className="text-center font-bold text-3xl text-purple-400">
+            LiteCode
+          </div>
+        </Link>
+      )}
 
       {/* Buttons */}
-      <div>
+      <div className={`${show ? "" : "hidden"}`}>
         <div>
           <div className="flex justify-between gap-2">
             <div>
@@ -89,15 +109,22 @@ const NavBar = () => {
             </div>
             <div>
               <Button className="bg-blue-400" onClick={runCode}>
-                {isRunning ? <Loader2 className="animate-spin"/> : <PlayIcon />}
-                {isRunning ? "Running...": "Run"}
+                {isRunning ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <PlayIcon />
+                )}
+                {isRunning ? "Running..." : "Run"}
               </Button>
             </div>
             <div>
               <Button className="bg-emerald-500" onClick={submitCode}>
-                
-                {isSubmitting ? <Loader2 className="animate-spin" /> : <RocketIcon />}
-                {isSubmitting ? "Submitting...": "Submit"}
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <RocketIcon />
+                )}
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </div>

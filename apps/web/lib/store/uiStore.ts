@@ -21,3 +21,14 @@ export const useProblemIDStore = create<problemIDState>((set) => ({
     problemIDStore: 'problem',
     setProblemIDStore: (newproblemIDStore) => set({problemIDStore: newproblemIDStore})
 }))
+
+
+type navBarState = {
+    show: boolean
+    setShow: (newShow: boolean) => void;
+}
+
+export const useNavBarStore = create<navBarState>((set) => ({
+    show: false,
+    setShow: (newShow) => set({show: newShow})
+}))

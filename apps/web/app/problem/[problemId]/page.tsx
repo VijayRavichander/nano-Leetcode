@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import { useParams } from 'next/navigation';
 import { useCodeStore, useSlugStore } from "@/lib/store/codeStore";
-import { useProblemIDStore } from "@/lib/store/uiStore";
+import { useNavBarStore, useProblemIDStore } from "@/lib/store/uiStore";
 
 function App() {
   const [isResizing, setIsResizing] = useState(false);
@@ -21,24 +21,18 @@ function App() {
   const {c, setC} = useCodeStore();
   const {slug, setSlug} = useSlugStore();
   const {problemIDStore, setProblemIDStore} = useProblemIDStore();
+  const {show, setShow} = useNavBarStore();
+
   // Data fetching moved from ProblemDescription to here
   useEffect(() => {
     const getProblem = async () => {
       try {
+        setShow(true)
         const res = await axios.get(`${BACKEND_URL}/v1/getProblem?slug=${problemId}`);
         const data = res.data.problemInfo;
-
         setProblemDesc(data);
         setSlug(problemId as string);
-
-        const metaData = await JSON.parse(data.metaData);
-        const testCases = data.sampleTestCase.map((testCase: any) => {
-          return JSON.parse(testCase);
-        });
-
-        setMetaData(metaData);
-        setSampleTestCases(testCases);
-        setC(data.functionCode);
+        setC(data.functionCode.cpp);
         setProblemIDStore(res.data.problemInfo.id);
         setIsLoading(false);
       } catch (error) {
@@ -94,8 +88,6 @@ function App() {
       <ProblemDescription 
         sidebarWidth={sidebarWidth}
         problemDesc={problemDesc}
-        metaData={metaData}
-        sampleTestCases={sampleTestCases}
       />
 
       <div
@@ -103,7 +95,7 @@ function App() {
         onMouseDown={startResizing}
       />
       <div className="flex-1 flex flex-col border-l border-gray-700">
-        <CodeEditor sampleTestCases={sampleTestCases}/>
+        <CodeEditor problemDesc={problemDesc}/>
       </div>
     </div>
   );
