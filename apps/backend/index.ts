@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
 
 // Get the details of the problem like boilerplate code and everything
 app.get("/v1/getproblem", async (req, res) => {
-  const slug = req.query.slug;
+  const slug = req.query.slug as string;
 
   let problemInfo = await prismaClient.problemInfo.findFirst({
     where: {
@@ -44,7 +44,7 @@ app.get("/v1/getproblem", async (req, res) => {
 app.post("/v1/submit", async (req, res) => {
   const slug = req.body.slug;
   const language = req.body.language;
-  const userCode = req.body.code;
+  const userCode = req.body.code as string;
 
   const problemInfo = await prismaClient.problemInfo.findFirst({
   where: {
@@ -58,9 +58,16 @@ app.post("/v1/submit", async (req, res) => {
     },
   });
 
+  if(boilerplateData == null || boilerplateData.code == null){
+    res.status(401).json({
+      message: "Bad Request"
+    })
+    return;
+  }
 
   const finalCode = boilerplateData.code.cpp.replace("##USER_CODE_HERE##", userCode); // NEED TO REPLACE CPP
 
+  //@ts-ignore
   const submissions = boilerplateData?.testCases?.map((testcase, index) => ({
     source_code: finalCode,
     language_id: 54,

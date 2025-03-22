@@ -72,7 +72,7 @@ const NavBar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
-    <div className="flex justify-between bg-black text-white p-2">
+    <div className={`flex justify-between bg-black text-white p-2 ${show ? "": "border-b border-violet-400"}`}>
       {/* Logo  */}
       {show ? (
         <Link href="/problem">
@@ -118,7 +118,7 @@ const NavBar = () => {
               </Button>
             </div>
             <div>
-              <Button className="bg-emerald-500" onClick={submitCode}>
+              <Button className="bg-green-600" onClick={submitCode}>
                 {isSubmitting ? (
                   <Loader2 className="animate-spin" />
                 ) : (

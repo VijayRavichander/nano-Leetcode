@@ -1,3 +1,10 @@
+import axios from "axios";
+
+const JUDGE0_URL = process.env.JUDGE0_URL;
+const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
+const JUDGE0_HOST = process.env.JUDGE0_HOST;
+const USERID = "cm8ifurfy0000sipeax0reziu";
+
 export const checkSubmissionStatus = async (tokenQuery: string) => {
     while (true) {
       try {

@@ -9,6 +9,8 @@ import CodeEditor from "@/components/CodeEditor";
 import { useParams } from 'next/navigation';
 import { useCodeStore, useSlugStore } from "@/lib/store/codeStore";
 import { useNavBarStore, useProblemIDStore } from "@/lib/store/uiStore";
+import { useRouter } from "next/navigation";
+import Loader from "@/components/Loader";
 
 function App() {
   const [isResizing, setIsResizing] = useState(false);
@@ -22,6 +24,8 @@ function App() {
   const {slug, setSlug} = useSlugStore();
   const {problemIDStore, setProblemIDStore} = useProblemIDStore();
   const {show, setShow} = useNavBarStore();
+  const router = useRouter();
+
 
   // Data fetching moved from ProblemDescription to here
   useEffect(() => {
@@ -35,9 +39,9 @@ function App() {
         setC(data.functionCode.cpp);
         setProblemIDStore(res.data.problemInfo.id);
         setIsLoading(false);
+        console.log(data)
       } catch (error) {
-        console.error("Error fetching problem data:", error);
-        setIsLoading(false);
+        router.push("/internal-server-error")
       }
     };
 
@@ -77,9 +81,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1E1E1E]">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
-      </div>
+        <Loader color = {"amber"} />
     );
   }
 

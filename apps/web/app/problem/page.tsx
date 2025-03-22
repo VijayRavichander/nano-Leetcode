@@ -4,11 +4,14 @@ import ProblemDescription from "@/components/ProblemDescription";
 import React, { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "@/app/config";
-import { CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useNavBarStore } from "@/lib/store/uiStore";
+import { useRouter } from "next/navigation";
+
+import Loader from "@/components/Loader";
 
 // interface Challenge {
 //   id: string;
@@ -66,41 +69,62 @@ import { useNavBarStore } from "@/lib/store/uiStore";
 //   },
 // ];
 
+interface MetaData {
+  title: string;
+  description: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  constraints: string[];
+  tags: string[];
+}
+
+interface Problem {
+  metaData: MetaData;
+  slug: string;
+}
+
 function App() {
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const {show, setShow} = useNavBarStore();
-  const [problems, setProblems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { show, setShow } = useNavBarStore();
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  const filteredChallenges = challenges.filter((challenge) => {
-    const matchesDifficulty =
-      filter === "All" || challenge.difficulty === filter;
-    const matchesSearch =
-      challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      challenge.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDifficulty && matchesSearch;
-  });
+  // const filteredChallenges = challenges.filter((challenge) => {
+  //   const matchesDifficulty =
+  //     filter === "All" || challenge.difficulty === filter;
+  //   const matchesSearch =
+  //     challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     challenge.description.toLowerCase().includes(searchQuery.toLowerCase());
+  //   return matchesDifficulty && matchesSearch;
+  // });
 
   useEffect(() => {
-    setShow(false)
-    setIsLoading(true)
+    setShow(false);
+    setIsLoading(true);
     const getProblems = async () => {
-      const res = await axios.get(`${BACKEND_URL}/v1/getproblems`);
-      const problems = res.data.problems
-      setProblems(problems);
-      setIsLoading(false)
-    }
+      try {
+        const res = await axios.get(`${BACKEND_URL}/v1/getproblems`);
+        // await new Promise((resolve) => setTimeout(resolve, 4000))
+        const problems: Problem[] = res.data.problems;
+        setProblems(problems);
+        setIsLoading(false);
+      } catch (error) {
+        router.push("/internal-server-error");
+        // console.error("Something Went Wrong", error)
+      }
+    };
+    getProblems();
+  }, []);
 
-    getProblems()
-
-  },[])
-
-  if(isLoading){ return <div>Loading...</div>}
-
+  if (isLoading) {
+    return (
+      <Loader color = {"purple"} />
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-black/90 px-32 py-8">
+    <div className="min-h-screen bg-black px-32 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {problems.map((challenge, index) => (
           <div
@@ -118,7 +142,7 @@ function App() {
                         : "bg-red-900/30 text-red-400"
                   }`}
                 >
-                  {challenge.metaData.difficulty }
+                  {challenge.metaData.difficulty}
                 </span>
                 {/* {challenge.completed && (
                     <span className="ml-2 text-[#4ecca3]">

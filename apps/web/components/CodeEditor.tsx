@@ -1,6 +1,5 @@
 import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
-import SubmitBar from "./SubmitBar";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useCodeStore, useLangStore, useTestCaseStore } from "@/lib/store/codeStore";
