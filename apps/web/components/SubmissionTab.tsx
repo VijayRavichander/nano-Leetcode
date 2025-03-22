@@ -24,13 +24,17 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
 
   useEffect(() => {
     const fetchSubmissions = async () => {
-      setIsLoading(true);
-      // await new Promise((resolve) => setTimeout(resolve, 4000));
-      const res = await axios.get(
-        `${BACKEND_URL}/v1/submissioninfobulk?id=${problemIDStore}`
-      );
-      setSubmissionsList(res.data.submissions);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const res = await axios.get(
+          `${BACKEND_URL}/v1/submissioninfobulk?id=${problemIDStore}`
+        );
+        setSubmissionsList(res.data.submissions);
+        setIsLoading(false);
+      } catch (errror) {
+        setSubmissionsList([])
+        setIsLoading(false);
+      }
     };
     fetchSubmissions();
   }, [tab]);
@@ -93,7 +97,9 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
               ))}
             </div>
           ) : (
-            <div className="text-center font-thin text-blue-200">No Earlier Submissions </div>
+            <div className="text-center font-thin text-blue-200">
+              No Earlier Submissions{" "}
+            </div>
           )}
         </div>
       </div>

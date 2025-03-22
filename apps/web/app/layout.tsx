@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="suppressHydrationWarning">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <div className="relative flex flex-col">
           <div>

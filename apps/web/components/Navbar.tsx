@@ -1,5 +1,5 @@
 "use client";
-import { Loader2, Loader2Icon, PlayIcon, RocketIcon } from "lucide-react";
+import { Loader2, Loader2Icon, LockIcon, PlayIcon, RocketIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
 import {
@@ -72,17 +72,17 @@ const NavBar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
-    <div className={`flex justify-between bg-black text-white p-2 ${show ? "": "border-b border-violet-400"}`}>
+    <div className={`flex px-4 justify-between bg-black text-white p-2 ${show ? "": "border-b border-violet-400"}`}>
       {/* Logo  */}
       {show ? (
         <Link href="/problem">
-          <div className="text-center font-bold text-3xl text-purple-400">
+          <div className="text-center font-bold text-3xl bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
             LiteCode
           </div>
         </Link>
       ) : (
         <Link href="/">
-          <div className="text-center font-bold text-3xl text-purple-400">
+          <div className="text-center font-bold text-3xl bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
             LiteCode
           </div>
         </Link>
@@ -102,8 +102,7 @@ const NavBar = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-black text-white ">
                   <SelectItem value="cpp">CPP</SelectItem>
-                  <SelectItem value="python">Python</SelectItem>
-                  <SelectItem value="javascript">Javascript</SelectItem>
+                  <SelectItem value="python"><LockIcon/> Python</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -132,8 +131,8 @@ const NavBar = () => {
       </div>
       {/* Premium & Signup */}
       <div className="flex justify-between gap-2">
-        <Button className="bg-purple-600">Pro</Button>
-        <Button className="bg-blue-400">Signup</Button>
+        <Button className="bg-gradient-to-r from-amber-400 to-amber-500 cursor-pointer hover:bg-amber-800">Pro</Button>
+        <Button className="bg-blue-400 cursor-pointer">Signup</Button>
       </div>
     </div>
   );

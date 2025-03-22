@@ -282,6 +282,26 @@ app.post("/v1/addtest", async (req, res) => {
   res.json({ updateData });
 });
 
+
+app.get("/v1/getContributions", async (req, res) => {
+
+  // const userId = req.body.userId 
+  const userId = USERID
+
+  const submissions = await prismaClient.submission.findMany({
+    where: {
+      userId,
+    }, select: {
+      createdAt: true
+    }
+  })
+
+  res.status(200).json({
+    submissions
+  })
+
+})
+
 app.post("/v1/addProblem", async (req, res) => {
   try {
     const { problemInfo, code, testCases } = req.body;
