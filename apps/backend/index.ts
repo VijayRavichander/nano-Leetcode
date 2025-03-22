@@ -314,5 +314,5 @@ app.post("/v1/addProblem", async (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log("Server is running in PORT:3010");
+  console.log(`Server is running in PORT:${PORT}`);
 });
