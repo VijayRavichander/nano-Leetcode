@@ -7,7 +7,7 @@ import { BACKEND_URL } from "@/app/config";
 import { Loader2 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import { useParams } from 'next/navigation';
-import { useCodeStore, useSlugStore } from "@/lib/store/codeStore";
+import { useCodeStore, useSlugStore, useTestCaseStore } from "@/lib/store/codeStore";
 import { useNavBarStore, useProblemIDStore } from "@/lib/store/uiStore";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
@@ -25,12 +25,13 @@ function App() {
   const {problemIDStore, setProblemIDStore} = useProblemIDStore();
   const {show, setShow} = useNavBarStore();
   const router = useRouter();
-
+  const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
 
   // Data fetching moved from ProblemDescription to here
   useEffect(() => {
     const getProblem = async () => {
       try {
+        setTestCaseStatus([])
         setShow(true)
         const res = await axios.get(`${BACKEND_URL}/v1/getProblem?slug=${problemId}`);
         const data = res.data.problemInfo;
@@ -44,6 +45,7 @@ function App() {
       }
     };
 
+    console.log(problemDesc)
     getProblem();
   }, []);
 
