@@ -39,7 +39,6 @@ function App() {
         setC(data.functionCode.cpp);
         setProblemIDStore(res.data.problemInfo.id);
         setIsLoading(false);
-        console.log(data)
       } catch (error) {
         router.push("/internal-server-error")
       }
