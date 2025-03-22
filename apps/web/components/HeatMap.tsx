@@ -20,7 +20,7 @@ const ContributionsHeatmap = ({ data }: { data: Submission[] }) => {
   };
 
   const transformSubmissionsToContributionDays = (
-    inputData: []
+    inputData: Submission[]
   ): ContributionDay[] => {
     // Get current date and date from 365 days ago
     const today = new Date();
@@ -31,7 +31,7 @@ const ContributionsHeatmap = ({ data }: { data: Submission[] }) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       result.push({
-        date: date.toISOString().split("T")[0],
+        date: date.toISOString().split("T")[0] || "",
         count: 0,
       });
     }
@@ -42,8 +42,7 @@ const ContributionsHeatmap = ({ data }: { data: Submission[] }) => {
     // Count submissions for each date
     if (inputData) {
       inputData.forEach((submission) => {
-        const date = new Date(submission.createdAt).toISOString().split("T")[0];
-        console.log(data);
+        const date = new Date(submission.createdAt).toISOString().split("T")[0] || "";
         const entry = dateCountMap.get(date);
         if (entry) {
           entry.count++;

@@ -50,7 +50,7 @@ const NavBar = () => {
 
   useEffect(() => {
     const isAuthenticated = async () => {
-      const token = await getToken();
+      const token = await getToken() || "";
       setTokenStore(token);
     };
     isAuthenticated();
