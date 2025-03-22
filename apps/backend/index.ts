@@ -5,7 +5,7 @@ import axios from "axios";
 import {checkSubmissionStatus} from "./utils"
 import { authMiddleware } from "./middleware";
 
-const PORT = process.env.PORT || 3010;
+const PORT = process.env.PORT || 3012;
 
 const JUDGE0_URL = process.env.JUDGE0_URL;
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
