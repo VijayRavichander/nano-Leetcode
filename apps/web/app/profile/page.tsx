@@ -7,24 +7,31 @@ import { BACKEND_URL } from "../config";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { GithubIcon } from "lucide-react";
+import { useTokenStore } from "@/lib/store/uiStore";
 
 const USERID = "test";
 
 export default function Profile() {
   const router = useRouter();
-  const [contributions, setContributions] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-
+  const [contributions, setContributions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { tokenStore, setTokenStore } = useTokenStore();
+  
   useEffect(() => {
     const getContributions = async () => {
       try {
         const res = await axios.get(
-          `${BACKEND_URL}/v1/getContributions?userId=${USERID}`
+          `${BACKEND_URL}/v1/getContributions?userId=${USERID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${tokenStore}`,
+            },
+          }
         );
         const submissions = res.data.submissions;
-        console.log(submissions)
-        setContributions(submissions)
-        setIsLoading(false)
+        console.log(submissions);
+        setContributions(submissions);
+        setIsLoading(false);
       } catch (error) {
         router.push("/internal-server-error");
       }
@@ -33,19 +40,21 @@ export default function Profile() {
     getContributions();
   }, []);
 
-  if(isLoading){
-    return <div>
+  if (isLoading) {
+    return (
+      <div>
         <Loader color="green" />
-    </div>
+      </div>
+    );
   }
 
   return (
-    <div className="relative min-h-screen bg-black/90 px-16 py-8">
-    <div className="max-w-5xl">
-      <div className="glass-effect rounded-xl p-6">
-        <ContributionsHeatmap data={contributions} />
+    <div className="relative min-h-screen bg-black/90 px-auto py-8">
+      <div className="max-w-5xl">
+        <div className="glass-effect rounded-xl p-6">
+          <ContributionsHeatmap data={contributions} />
+        </div>
       </div>
     </div>
-  </div>
   );
 }

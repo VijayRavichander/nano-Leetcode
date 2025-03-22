@@ -1,4 +1,4 @@
-import { useProblemIDStore, useTab } from "@/lib/store/uiStore";
+import { useProblemIDStore, useTab, useTokenStore } from "@/lib/store/uiStore";
 import { Button } from "./ui/button";
 import {
   ArrowLeft,
@@ -21,13 +21,17 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
   const [submissionsList, setSubmissionsList] = useState([]);
   const { problemIDStore, setProblemIDStore } = useProblemIDStore();
   const { c, setC } = useCodeStore();
-
+  const { tokenStore, setTokenStore } = useTokenStore();
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
         setIsLoading(true);
         const res = await axios.get(
-          `${BACKEND_URL}/v1/submissioninfobulk?id=${problemIDStore}`
+          `${BACKEND_URL}/v1/submissioninfobulk?id=${problemIDStore}`, {
+            headers: {
+              Authorization: `Bearer ${tokenStore}`
+            }
+          }
         );
         setSubmissionsList(res.data.submissions);
         setIsLoading(false);
@@ -117,7 +121,7 @@ const SubmissionCard = ({
   const utcDate = new Date(submission.createdAt);
   // Convert to local date string
   const localDateString = utcDate.toLocaleString();
-
+  console.log(submission)
   return (
     <div className="bg-zinc-900/50 rounded-xl p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer">
       <div className="flex items-center justify-between">
@@ -146,7 +150,7 @@ const SubmissionCard = ({
           <Button
             className="hover:text-blue-300 text-xs"
             onClick={() => {
-              setC(submission.code);
+              setC(submission.code.code);
             }}
           >
             View Submission <ArrowRight className="w-3 h-3" />

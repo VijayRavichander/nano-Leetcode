@@ -1,5 +1,11 @@
 "use client";
-import { Loader2, Loader2Icon, LockIcon, PlayIcon, RocketIcon } from "lucide-react";
+import {
+  Loader2,
+  Loader2Icon,
+  LockIcon,
+  PlayIcon,
+  RocketIcon,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
 import {
@@ -17,9 +23,19 @@ import {
   useSlugStore,
   useTestCaseStore,
 } from "@/lib/store/codeStore";
-import { useState } from "react";
-import { useNavBarStore, useTab } from "@/lib/store/uiStore";
+import { useEffect, useState } from "react";
+import { useNavBarStore, useTab, useTokenStore } from "@/lib/store/uiStore";
 import Link from "next/link";
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useClerk,
+} from "@clerk/nextjs";
+
+import { useAuth } from "@clerk/nextjs";
 
 const NavBar = () => {
   const c = useCodeStore((state) => state.c);
@@ -28,51 +44,105 @@ const NavBar = () => {
   const slug = useSlugStore((state) => state.slug);
   const { tab, setTab } = useTab();
   const { show, setShow } = useNavBarStore();
+  const { getToken } = useAuth();
+  const { tokenStore, setTokenStore } = useTokenStore();
+  const { openSignIn } = useClerk();
+
+  useEffect(() => {
+    const isAuthenticated = async () => {
+      const token = await getToken();
+      setTokenStore(token);
+    };
+    isAuthenticated();
+  }, []);
 
   const runCode = async () => {
     setIsRunning(true);
-    const res = await axios.post(`${BACKEND_URL}/v1/run`, {
-      slug: slug,
-      code: c,
-      language: lang,
-    });
+    try {
+      const res = await axios.post(
+        `${BACKEND_URL}/v1/run`,
+        {
+          slug: slug,
+          code: c,
+          language: lang,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${tokenStore}`,
+          },
+        }
+      );
 
-    const data = res.data.result;
-    setTestCaseStatus(data);
-    setIsRunning(false);
+      const data = res.data.result;
+      setTestCaseStatus(data);
+      setIsRunning(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          openSignIn(); // Open Clerk sign-in modal
+          setIsRunning(false);
+        } else {
+          console.error("Error:", error);
+        }
+      }
+    }
   };
 
   const submitCode = async () => {
     setIsSubmitting(true);
 
-    const res = await axios.post(`${BACKEND_URL}/v1/submit`, {
-      slug: slug,
-      code: c,
-      language: lang,
-    });
+    try {
+      const res = await axios.post(
+        `${BACKEND_URL}/v1/submit`,
+        {
+          slug: slug,
+          code: c,
+          language: lang,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${tokenStore}`,
+          },
+        }
+      );
 
-    const submissionToken = res.data.submissionId;
+      const submissionToken = res.data.submissionId;
 
-    const response = await axios.get(
-      `${BACKEND_URL}/v1/getsubmissionstatus?submissionId=${submissionToken}`
-    );
-    if (response.data.status == "ACCEPTED") {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ["#60A5FA", "#34D399", "#818CF8"],
-      });
+      const response = await axios.get(
+        `${BACKEND_URL}/v1/getsubmissionstatus?submissionId=${submissionToken}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenStore}`,
+          },
+        }
+      );
+      if (response.data.status == "ACCEPTED") {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#60A5FA", "#34D399", "#818CF8"],
+        });
+      }
+      setTab("submissions");
+      setIsSubmitting(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status == 401) {
+          openSignIn();
+          setIsSubmitting(false);
+        }
+      }
     }
-    setTab("submissions");
-    setIsSubmitting(false);
   };
 
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
-    <div className={`flex px-4 justify-between bg-black text-white p-2 ${show ? "": "border-b border-violet-400"}`}>
+    <div
+      className={`flex px-4 justify-between bg-black text-white p-2 ${show ? "" : "border-b border-violet-400"}`}
+    >
       {/* Logo  */}
       {show ? (
         <Link href="/problem">
@@ -102,7 +172,9 @@ const NavBar = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-black text-white ">
                   <SelectItem value="cpp">CPP</SelectItem>
-                  <SelectItem value="python"><LockIcon/> Python</SelectItem>
+                  <SelectItem value="python">
+                    <LockIcon /> Python
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -131,8 +203,17 @@ const NavBar = () => {
       </div>
       {/* Premium & Signup */}
       <div className="flex justify-between gap-2">
-        <Button className="bg-gradient-to-r from-amber-400 to-amber-500 cursor-pointer hover:bg-amber-800">Pro</Button>
-        <Button className="bg-blue-400 cursor-pointer">Signup</Button>
+        <Button className="bg-gradient-to-r from-amber-400 to-amber-500 cursor-pointer hover:bg-amber-800">
+          Pro
+        </Button>
+        <SignedOut>
+          <Button asChild className="bg-blue-400 cursor-pointer">
+            <SignInButton mode="modal" />
+          </Button>
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </div>
     </div>
   );

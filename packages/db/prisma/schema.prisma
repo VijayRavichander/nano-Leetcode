@@ -51,7 +51,7 @@ model DefaultCode {
 
 model Submission {
   id         String           @id @default(cuid())
-  code       String
+  code       Json
   languageId Int
   status     SubmissionResult @default(PENDING)
   createdAt  DateTime         @default(now())

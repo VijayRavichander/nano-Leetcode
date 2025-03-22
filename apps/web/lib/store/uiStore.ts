@@ -32,3 +32,13 @@ export const useNavBarStore = create<navBarState>((set) => ({
     show: false,
     setShow: (newShow) => set({show: newShow})
 }))
+
+type tokenState = {
+    tokenStore: string
+    setTokenStore: (newToken: string) => void;
+}
+
+export const useTokenStore = create<tokenState>((set) => ({
+    tokenStore: "",
+    setTokenStore: (newToken) => set({tokenStore: newToken})
+}))

@@ -3,13 +3,13 @@ import { prismaClient } from "db";
 import cors from "cors";
 import axios from "axios";
 import {checkSubmissionStatus} from "./utils"
+import { authMiddleware } from "./middleware";
 
 const PORT = process.env.PORT || 3010;
 
 const JUDGE0_URL = process.env.JUDGE0_URL;
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
 const JUDGE0_HOST = process.env.JUDGE0_HOST;
-const USERID = "cm8ifurfy0000sipeax0reziu";
 const app = express();
 
 app.use(cors());
@@ -41,10 +41,10 @@ app.get("/v1/getproblem", async (req, res) => {
 });
 
 // Submitting a Problem
-app.post("/v1/submit", async (req, res) => {
+app.post("/v1/submit", authMiddleware, async (req, res) => {
   const slug = req.body.slug;
   const language = req.body.language;
-  const userCode = req.body.code as string;
+  const userCode = req.body.code;
 
   const problemInfo = await prismaClient.problemInfo.findFirst({
   where: {
@@ -94,11 +94,11 @@ app.post("/v1/submit", async (req, res) => {
 
   const submissionId = await prismaClient.submission.create({
     data: {
-      code: userCode,
+      code: {userCode},
       languageId: 54,
       tokens: judgeZeroTokens,
       problemId: problemInfo?.id,
-      userId: USERID,
+      userId: req.userId!,
     },
   });
 
@@ -108,7 +108,7 @@ app.post("/v1/submit", async (req, res) => {
   });
 });
 
-app.post("/v1/run", async (req, res) => {
+app.post("/v1/run", authMiddleware, async (req, res) => {
   const slug = req.body.slug;
   const language = req.body.language;
   const userCode = req.body.code;
@@ -177,7 +177,7 @@ app.post("/v1/run", async (req, res) => {
   });
 });
 
-app.get("/v1/getsubmissionstatus", async (req, res) => {
+app.get("/v1/getsubmissionstatus", authMiddleware, async (req, res) => {
   const submissionId = req.query.submissionId;
 
   const submissionRes = await prismaClient.submission.findFirst({
@@ -235,11 +235,11 @@ app.get("/v1/getproblems", async (req, res) => {
 
 
 // Get ALL the submission status of the problem
-app.get("/v1/submissioninfobulk", async (req, res) => {
+app.get("/v1/submissioninfobulk", authMiddleware, async (req, res) => {
 
     const problemId = req.query.id as string
-    // const userId = req.query.userid
-    const userId = USERID
+    const userId = req.userId
+    // const userId = USERID
 
     const submissions = await prismaClient.submission.findMany({
       where: {
@@ -259,34 +259,9 @@ app.get("/v1/submissioninfobulk", async (req, res) => {
 });
 
 
-// Add a NEW Problem to the DB
-app.post("/v1/addtest", async (req, res) => {
-  const id = req.body.id;
-  const payload = req.body.testCases;
+app.get("/v1/getContributions", authMiddleware, async (req, res) => {
 
-  await prismaClient.defaultCode.update({
-    where: {
-      id: id,
-    },
-    data: {
-      testCases: payload,
-    },
-  });
-
-  const updateData = await prismaClient.defaultCode.findFirst({
-    where: {
-      id,
-    },
-  });
-
-  res.json({ updateData });
-});
-
-
-app.get("/v1/getContributions", async (req, res) => {
-
-  // const userId = req.body.userId 
-  const userId = USERID
+  const userId = req.userId!
 
   const submissions = await prismaClient.submission.findMany({
     where: {
