@@ -1,11 +1,5 @@
 "use client";
-import {
-  Loader2,
-  Loader2Icon,
-  LockIcon,
-  PlayIcon,
-  RocketIcon,
-} from "lucide-react";
+import { Loader2, LockIcon, PlayIcon, RocketIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
 import {
@@ -16,74 +10,69 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from "axios";
-import { BACKEND_URL } from "@/app/config";
 import {
   useCodeStore,
   useLangStore,
   useSlugStore,
   useTestCaseStore,
 } from "@/lib/store/codeStore";
-import { useEffect, useState } from "react";
-import { useNavBarStore, useTab, useTokenStore } from "@/lib/store/uiStore";
+import { useState } from "react";
+import { useNavBarStore, useTab, useRunButtonState } from "@/lib/store/uiStore";
 import Link from "next/link";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-  useClerk,
-} from "@clerk/nextjs";
+import NavbarActionDropDown from "./ActionDropDown";
 
-import { useAuth } from "@clerk/nextjs";
+import { AnimatePresence, motion } from "framer-motion";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const NavBar = () => {
-  const c = useCodeStore((state) => state.c);
-  const { lang, setLang } = useLangStore();
-  const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
-  const slug = useSlugStore((state) => state.slug);
-  const { tab, setTab } = useTab();
-  const { show, setShow } = useNavBarStore();
-  const { getToken } = useAuth();
-  const { tokenStore, setTokenStore } = useTokenStore();
-  const { openSignIn } = useClerk();
 
-  useEffect(() => {
-    const isAuthenticated = async () => {
-      const token = await getToken() || "";
-      setTokenStore(token);
-    };
-    isAuthenticated();
-  }, []);
+
+  const codeInEditor = useCodeStore((state) => state.getCurrentCode());
+  const { lang: selectedLanguage, setLang: setSelectedLanguage } = useLangStore();
+  const setTestStatus = useTestCaseStore((state) => state.setTestCaseStatus);
+  const problemSlug = useSlugStore((state) => state.slug);
+  const { tab: activeTab, setTab: setActiveTab } = useTab();
+  const { show: showControls } = useNavBarStore();
+  const { isRunning, setIsRunning } = useRunButtonState();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const session = authClient.useSession();
+  const router = useRouter();
+
+  const handleSignIn = async () => {
+    router.push("/signin");
+  };
 
   const runCode = async () => {
     setIsRunning(true);
     try {
-      const res = await axios.post(
-        `${BACKEND_URL}/v1/run`,
-        {
-          slug: slug,
-          code: c,
-          language: lang,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${tokenStore}`,
-          },
-        }
-      );
+      const res = await axios.post(`/api/run`, {
+        slug: problemSlug,
+        userCode: codeInEditor,
+        language: selectedLanguage,
+      });
 
       const data = res.data.result;
-      setTestCaseStatus(data);
+
+      if (problemSlug) {
+        setTestStatus(problemSlug, data);
+      }
       setIsRunning(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          openSignIn(); // Open Clerk sign-in modal
+          await handleSignIn();
+
           setIsRunning(false);
         } else {
           console.error("Error:", error);
+
+          setIsRunning(false);
         }
+      } else {
+        setIsRunning(false);
       }
     }
   };
@@ -92,30 +81,31 @@ const NavBar = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await axios.post(
-        `${BACKEND_URL}/v1/submit`,
-        {
-          slug: slug,
-          code: c,
-          language: lang,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${tokenStore}`,
-          },
-        }
-      );
+      const res1 = await axios.post(`/api/run`, {
+        slug: problemSlug,
+        userCode: codeInEditor,
+        language: selectedLanguage,
+      });
+
+      const data = res1.data.result;
+
+      const res = await axios.post(`/api/submit`, {
+        slug: problemSlug,
+        userCode: codeInEditor,
+        language: selectedLanguage,
+      });
 
       const submissionToken = res.data.submissionId;
+      console.log(submissionToken);
 
       const response = await axios.get(
-        `${BACKEND_URL}/v1/getsubmissionstatus?submissionId=${submissionToken}`,
-        {
-          headers: {
-            Authorization: `Bearer ${tokenStore}`,
-          },
-        }
+        `/api/submissionstatus?submissionId=${submissionToken}`
       );
+
+      if (problemSlug) {
+        setTestStatus(problemSlug, data);
+      }
+
       if (response.data.status == "ACCEPTED") {
         confetti({
           particleCount: 100,
@@ -124,78 +114,144 @@ const NavBar = () => {
           colors: ["#60A5FA", "#34D399", "#818CF8"],
         });
       }
-      setTab("submissions");
+      setActiveTab("submissions");
       setIsSubmitting(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status == 401) {
-          openSignIn();
+          await handleSignIn();
+          setIsSubmitting(false);
+        } else {
+          console.error("Error:", error);
           setIsSubmitting(false);
         }
+      } else {
+        setIsSubmitting(false);
       }
     }
   };
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   return (
     <div
-      className={`flex px-4 justify-between bg-black text-white p-2 ${show ? "" : "border-b border-violet-400"}`}
+      className={`flex px-4 justify-between bg-black text-white p-2 ${showControls ? "" : "border-b border-violet-400"}`}
     >
       {/* Logo  */}
-      {show ? (
-        <Link href="/problem">
-          <div className="text-center font-bold text-3xl bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
-            LiteCode
-          </div>
-        </Link>
-      ) : (
-        <Link href="/">
-          <div className="text-center font-bold text-3xl bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
-            LiteCode
-          </div>
-        </Link>
-      )}
+      <Link href={showControls ? "/problem" : "/"}>
+        <div
+          className={`text-center lowercase font-bold text-2xl md:text-3xl  text-purple-400 tracking-tighter`}
+        >
+          LiteCode
+        </div>
+      </Link>
 
       {/* Buttons */}
-      <div className={`${show ? "" : "hidden"}`}>
+      <div className={`${showControls ? "" : "hidden"}`}>
         <div>
           <div className="flex justify-between gap-2">
             <div>
               <Select
-                onValueChange={(value) => setLang(value)}
+                onValueChange={(value) => setSelectedLanguage(value)}
                 defaultValue="cpp"
               >
-                <SelectTrigger className="w-[180px] focus:ring-0 focus:outline-none border-[2px] border-blue-200 shadow-none">
+                <SelectTrigger className="w-full md:w-[180px] focus:ring-0! focus:outline-none! border-0! shadow-none text-white bg-neutral-900">
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
-                <SelectContent className="bg-black text-white ">
-                  <SelectItem value="cpp">CPP</SelectItem>
-                  <SelectItem value="python">
-                    <LockIcon /> Python
+                <SelectContent className=" text-white/90! bg-neutral-800">
+                  <SelectItem value="cpp" className="">
+                    CPP
+                  </SelectItem>
+                  <SelectItem value="python" className="" disabled>
+                    <LockIcon className="w-4 h-4" /> Python
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Button className="bg-blue-400" onClick={runCode}>
-                {isRunning ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <PlayIcon />
-                )}
-                {isRunning ? "Running..." : "Run"}
+              <Button
+                className=" text-blue-400 active:scale-95 transition-all duration-200 cursor-pointer font-normal hover:bg-blue-500/50 hover:text-blue-200"
+                onClick={runCode}
+              >
+                <AnimatePresence mode="wait">
+                  {isRunning ? (
+                    <motion.div
+                      key="running"
+                      initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        type: "spring",
+                        bounce: 0.3,
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="animate-spin" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="run"
+                      initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        type: "spring",
+                        bounce: 0.3,
+                      }}
+                      className="flex items-center gap-2 text-sm md:text-base"
+                    >
+                      <PlayIcon className="hidden md:block fill-current" />
+                      Run
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Button>
             </div>
             <div>
-              <Button className="bg-green-600" onClick={submitCode}>
-                {isSubmitting ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <RocketIcon />
-                )}
-                {isSubmitting ? "Submitting..." : "Submit"}
+              <Button
+                className="group text-green-600 active:scale-95 transition-all duration-200 cursor-pointer font-normal hover:bg-emerald-500/50 hover:text-green-200"
+                onClick={submitCode}
+              >
+                <AnimatePresence mode="wait">
+                  {isSubmitting ? (
+                    <motion.div
+                      key="submitting"
+                      initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        type: "spring",
+                        bounce: 0.3,
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="flex items-center gap-1">
+                        <div className="flex space-x-1">
+                          <div className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                          <div className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                          <div className="w-1 h-1 bg-current rounded-full animate-bounce"></div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="submit"
+                      initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        type: "spring",
+                        bounce: 0.3,
+                      }}
+                      className="flex items-center gap-2 text-sm md:text-base"
+                    >
+                      <RocketIcon className="hidden md:block" />
+                      Submit
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Button>
             </div>
           </div>
@@ -203,17 +259,23 @@ const NavBar = () => {
       </div>
       {/* Premium & Signup */}
       <div className="flex justify-between gap-2">
-        <Button className="bg-gradient-to-r from-amber-400 to-amber-500 cursor-pointer hover:bg-amber-800">
-          Pro
-        </Button>
-        <SignedOut>
-          <Button asChild className="bg-blue-400 cursor-pointer">
-            <SignInButton mode="modal" />
+        {!session.data ? (
+          <Button
+            className=" lowercase hover:underline
+                        bg-neutral-950
+                        text-white/90 hover:text-white hover:bg-neutral-800
+                        text-sm
+                        px-2 rounded-md
+                        active:scale-95 transition-all duration-300
+                        cursor-pointer focus:outline-none
+          "
+            onClick={handleSignIn}
+          >
+            Sign in
           </Button>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
+        ) : (
+          <NavbarActionDropDown session={session} />
+        )}
       </div>
     </div>
   );

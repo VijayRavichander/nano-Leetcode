@@ -1,9 +1,10 @@
 "use client";
+
 import React from "react";
-import { Code2, CupSoda, CupSodaIcon, TimerIcon, Trophy } from "lucide-react";
+import { Code2, TimerIcon, Trophy } from "lucide-react";
 import { Button } from "./ui/button";
 import { useTab } from "@/lib/store/uiStore";
-import SubmissionTab from "./SubmissionTab";
+import SubmissionTab from "./submission/SubmissionTab";
 import LeaderBoardTab from "./LeaderBoard";
 
 interface ProblemDescriptionProps {
@@ -17,40 +18,47 @@ function ProblemDescription({
 }: ProblemDescriptionProps) {
   const { tab, setTab } = useTab();
 
+  const difficulty = problemDesc?.difficulty;
+  const title = problemDesc?.title;
+  const description = problemDesc?.description;
+  const constraints: string[] = problemDesc?.constraints || [];
+  const examples: any[] = problemDesc?.visibleTestCases || [];
+
   return (
     <>
       <div
-        className={`${tab == "problem" ? "" : "hidden"}  overflow-y-auto p-6`}
+        className={`${tab == "problem" ? "" : "hidden"}  md:overflow-y-auto p-6`}
         style={{ width: `${sidebarWidth}px` }}
       >
         {/* Header */}
         <div className="flex justify-between items-center gap-2 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Code2 className="w-6 h-6 text-violet-400" />
-            <h1 className="text-xl font-semibold">
-              {problemDesc.metaData.title}
+            <h1 className="text-xl font-bold">
+              {title}
             </h1>
           </div>
 
           <div className="flex justify-between items-center gap-2 mb-6">
-            <div>
+            <div
+            >
               <Button
-                className="bg-blue-200 text-blue-500"
+                className="text-white/90 hover:bg-neutral-700 text-xs font-normal bg-neutral-800 active:scale-95 transition-all duration-200 cursor-pointer"
                 onClick={() => {
                   setTab("submissions");
                 }}
               >
-                <TimerIcon /> Submissions
+                <TimerIcon className="w-2 h-2" /> Submissions
               </Button>
             </div>
             <div>
               <Button
-                className="bg-amber-100 text-amber-500"
+                className="text-white/90 hover:bg-neutral-700 text-xs font-normal bg-neutral-800 active:scale-95  transition-all duration-200 cursor-pointer"
                 onClick={() => {
                   setTab("leaderboard");
                 }}
               >
-                <Trophy /> LeaderBoard
+                <Trophy className="w-2 h-2" /> LeaderBoard
               </Button>
             </div>
           </div>
@@ -60,25 +68,25 @@ function ProblemDescription({
         <div className="mb-6">
           <span
             className={`px-3 py-1 bg-[#1a472f] text-[#00FF9D] rounded-full text-sm ${
-              problemDesc.metaData.difficulty === "Easy"
+              difficulty === "Easy"
                 ? "bg-green-900/30 text-green-400"
-                : problemDesc.metaData.difficulty === "Medium"
-                  ? "bg-blue-900/30 text-blue-400"
+                : difficulty === "Medium"
+                  ? "bg-blue-900/30 text-yellow-400"
                   : "bg-red-900/30 text-red-400"
             }`}
           >
-            {problemDesc.metaData.difficulty}
+            {difficulty}
           </span>
         </div>
 
         {/* Problem Description */}
-        <p className="text-gray-300 mb-8">{problemDesc.metaData.description}</p>
+        <p className="text-white/90 mb-8 font-light ">{description}</p>
 
         {/* Examples */}
-        {problemDesc.sampleTestCase.map((testCase: any, index: number) => (
+        {examples.map((testCase: any, index: number) => (
           <div className="mb-8" key={index}>
-            <h2 className="text-lg font-semibold mb-3">Example {index + 1}:</h2>
-            <div className="bg-gray-800 p-4 rounded-lg font-mono text-sm">
+            <h2 className="text-sm font-semibold mb-3">Example {index + 1}:</h2>
+            <div className="bg-white/5 p-4 rounded-lg font-mono text-sm">
               <div className="mb-2">
                 <span className="text-gray-500">Input: </span>
                 <span>{testCase.input}</span>
@@ -88,20 +96,15 @@ function ProblemDescription({
                 <span>{testCase.output}</span>
               </div>
             </div>
-            {/* TODO  */}
-            {/* <div className={`${testCase.explaination}`}>
-                <span className="text-white">Explaination: </span>
-                <span>{testCase.explaination}</span>
-              </div> */}
           </div>
         ))}
 
         {/* Constraints */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Constraints</h2>
-          <ul className="list-disc list-inside text-gray-300 space-y-2 text-sm">
-            {problemDesc.metaData.constraints &&
-              problemDesc.metaData.constraints.map(
+          <h2 className="text-sm font-semibold mb-3">Constraints</h2>
+          <ul className="list-disc list-inside text-white/90 mb-8 font-light text-sm">
+            {constraints &&
+              constraints.map(
                 (constraint: any, index: number) => (
                   <li key={index}>{constraint}</li>
                 )
@@ -112,6 +115,11 @@ function ProblemDescription({
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3">Topics</h2>
           {/* TODO */}
+          {problemDesc?.tags.map((tag: any) => (
+            <span key={tag} className="text-sm  mr-2 bg-white/10 px-2 py-1 rounded-md">
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
       <div>

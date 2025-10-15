@@ -18,7 +18,7 @@ const LeaderBoardTab = ({ sidebarWidth}: {sidebarWidth: number}) => {
       >
         <ArrowLeft />
       </Button>
-      <span className="px-5 text-xl font-bold text-yellow-400"><Trophy className="inline mx-2"/>LeaderBoard {"(Coming Soon!)"}</span>
+      <span className="px-5 text-md font-bold text-white">LeaderBoard</span>
     </div>
   );
 };

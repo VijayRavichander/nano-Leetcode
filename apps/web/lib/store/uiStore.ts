@@ -10,8 +10,17 @@ export const useTab = create<leftTab>((set) => ({
     setTab: (newTab) => set({tab: newTab})
 }))
 
+type RunButtonState = {
+    isRunning: boolean
+    setIsRunning: (isRunning: boolean) => void
+}
 
+export const useRunButtonState = create<RunButtonState>((set) => ({
+    isRunning: false,
+    setIsRunning: (isRunning) => set({isRunning})
+}))
 
+    
 type problemIDState = {
     problemIDStore: string
     setProblemIDStore: (newproblemIDStore: string) => void;

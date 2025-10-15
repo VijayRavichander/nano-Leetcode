@@ -3,51 +3,77 @@
 import ProblemDescription from "@/components/ProblemDescription";
 import React, { useState, useCallback, useEffect } from "react";
 import axios from "axios";
-import { BACKEND_URL } from "@/app/config";
-import { Loader2 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
-import { useParams } from 'next/navigation';
-import { useCodeStore, useSlugStore, useTestCaseStore } from "@/lib/store/codeStore";
+import { useParams } from "next/navigation";
+import { useCodeStore, useSlugStore } from "@/lib/store/codeStore";
 import { useNavBarStore, useProblemIDStore } from "@/lib/store/uiStore";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 
 function App() {
+  // States
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(600);
   const [problemDesc, setProblemDesc] = useState({});
-  const [metaData, setMetaData] = useState({});
-  const [sampleTestCases, setSampleTestCases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { problemId } = useParams();
-  const {c, setC} = useCodeStore();
-  const {slug, setSlug} = useSlugStore();
-  const {problemIDStore, setProblemIDStore} = useProblemIDStore();
-  const {show, setShow} = useNavBarStore();
-  const router = useRouter();
-  const { testCaseStatus, setTestCaseStatus } = useTestCaseStore();
 
-  // Data fetching moved from ProblemDescription to here
+  // Stores
+  const { setCodeForSlug, getCodeForSlug, setCurrentSlug } = useCodeStore();
+  const setSlug = useSlugStore((s) => s.setSlug);
+  const setShow = useNavBarStore((s) => s.setShow);
+  const { setProblemIDStore } = useProblemIDStore();
+  
+
+  // Hooks
+  const { problemId: urlSlug } = useParams();
+  const router = useRouter();
+
   useEffect(() => {
     const getProblem = async () => {
       try {
-        setTestCaseStatus([])
-        setShow(true)
-        const res = await axios.get(`${BACKEND_URL}/v1/getProblem?slug=${problemId}`);
-        const data = res.data.problemInfo;
+        // Initialize UI state
+        setShow(true);
+
+        // Fetch problem data
+        const res = await axios.get(`/api/getProblem?slug=${urlSlug}`);
+        const data = res.data;
+
+        // Set problem-related state
         setProblemDesc(data);
-        setSlug(problemId as string);
-        setC(data.functionCode.cpp);
-        setProblemIDStore(res.data.problemInfo.id);
+        setSlug(urlSlug as string);
+        setProblemIDStore(data.id);
+        setCurrentSlug(urlSlug as string);
+
+        // Get default code for this problem
+        const defaultCode = Array.isArray(data?.functionCode)
+          ? data.functionCode.find((fc: any) => fc.language === "cpp")?.code ||
+            data.functionCode[0]?.code ||
+            ""
+          : "";
+
+        // Check if we have saved code for this problem
+        const savedCode = getCodeForSlug(urlSlug as string);
+        
+        // Use saved code if it exists, otherwise use default
+        const codeToUse = savedCode || defaultCode;
+        
+        // Set the code for this problem (this will persist it)
+        setCodeForSlug(urlSlug as string, codeToUse);
+        
         setIsLoading(false);
+
       } catch (error) {
-        router.push("/internal-server-error")
+        // Handle error
+        router.push("/internal-server-error");
       }
     };
 
-    console.log(problemDesc)
     getProblem();
-  }, []);
+
+    return () => {
+      setShow(false);
+    };
+  }, [urlSlug, setProblemIDStore, setShow, setSlug, setCodeForSlug, getCodeForSlug, setCurrentSlug, router]);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     setIsResizing(true);
@@ -63,7 +89,7 @@ function App() {
       if (isResizing) {
         const newWidth = e.clientX;
         // Limit the sidebar width between 300px and 800px
-        if (newWidth >= 300 && newWidth <= 1000) {
+        if (newWidth >= 0 && newWidth <= 1000) {
           setSidebarWidth(newWidth);
         }
       }
@@ -81,24 +107,21 @@ function App() {
   }, [resize, stopResizing]);
 
   if (isLoading) {
-    return (
-        <Loader color = {"amber"} />
-    );
+    return <Loader colorClass={"text-violet-400"} />;
   }
 
   return (
-    <div className="flex min-h-screen bg-[#1E1E1E] text-white">
-      <ProblemDescription 
+    <div className="flex flex-col md:flex-row lg:min-h-screen bg-[#121212] text-white max-h-screen overflow-y-scroll md:overflow-y-auto">
+      <ProblemDescription
         sidebarWidth={sidebarWidth}
         problemDesc={problemDesc}
       />
-
       <div
-        className="w-1 cursor-col-resize bg-transparent hover:bg-gray-700 active:bg-gray-600 transition-colors"
+        className="hidden md:block w-1 cursor-col-resize bg-transparent hover:bg-gray-700 active:bg-gray-600 transition-colors "
         onMouseDown={startResizing}
       />
-      <div className="flex-1 flex flex-col border-l border-gray-700">
-        <CodeEditor problemDesc={problemDesc}/>
+      <div className="flex-1 min-h-0 flex flex-col border-l border-gray-700 border-t md:border-t-0 max-h-screen">
+        <CodeEditor problemDesc={problemDesc} />
       </div>
     </div>
   );

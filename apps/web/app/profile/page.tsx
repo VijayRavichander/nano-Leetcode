@@ -1,6 +1,5 @@
 "use client";
 
-import ContributionsHeatmap from "@/components/HeatMap";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
@@ -43,7 +42,7 @@ export default function Profile() {
   if (isLoading) {
     return (
       <div>
-        <Loader color="green" />
+        <Loader colorClass="text-green-400" />
       </div>
     );
   }
@@ -52,7 +51,7 @@ export default function Profile() {
     <div className="relative min-h-screen bg-black/90 px-auto py-8">
       <div className="max-w-5xl">
         <div className="glass-effect rounded-xl p-6">
-          <ContributionsHeatmap data={contributions} />
+          {/* <ContributionsHeatmap data={contributions} /> */}
         </div>
       </div>
     </div>
