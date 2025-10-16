@@ -71,7 +71,7 @@ function ProblemDescription({
               difficulty === "Easy"
                 ? "bg-green-900/30 text-green-400"
                 : difficulty === "Medium"
-                  ? "bg-blue-900/30 text-yellow-400"
+                  ? "bg-yellow-900/30 text-yellow-400"
                   : "bg-red-900/30 text-red-400"
             }`}
           >

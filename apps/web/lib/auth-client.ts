@@ -4,8 +4,6 @@ const BASE_URL = process.env.NODE_ENV === 'production'
   ? "https://litecode.vijayravichander.com" 
   : "http://localhost:3000";
 
-
-
 export const authClient = createAuthClient({
-  baseURL: "https://litecode.vijayravichander.com",
+  baseURL: BASE_URL,
 });

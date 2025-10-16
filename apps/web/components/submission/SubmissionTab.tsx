@@ -13,6 +13,7 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
   // isInitialLoading is true when the submissions tab is first loaded and the submissions are being fetched.
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
+  const [authError, setAuthError] = useState(false);
 
   // Cursor marks the last submission we returned; backend uses it to resume the next page.
   const [cursor, setCursor] = useState<string | null>(null);
@@ -54,9 +55,14 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
         setCursor(nextCursor ?? null);
 
         setHasNext(Boolean(nextHasNext));
-      } catch (error) {
+        setAuthError(false); // Reset auth error on successful fetch
+      } catch (error: any) {
         if (!append) {
           setSubmissionsList([]);
+          // Check if it's an authentication error
+          if (error.response?.status === 401) {
+            setAuthError(true);
+          }
         }
       } finally {
         isFetchingRef.current = false;
@@ -77,6 +83,7 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
     setCursor(null);
     setHasNext(true);
     setIsInitialLoading(true);
+    setAuthError(false); // Reset auth error when switching tabs/problems
 
     fetchSubmissions(null, false);
   }, [tab, problemIDStore, fetchSubmissions]);
@@ -172,7 +179,7 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
             </div>
           ) : (
             <div className="text-center font-thin text-white/80">
-              No Earlier Submissions{" "}
+              {authError ? "Please log in first" : "No Earlier Submissions"}{" "}
             </div>
           )}
           {/* Invisible sentinel that the intersection observer watches to trigger pagination. */}

@@ -18,7 +18,7 @@ function Problems({ problems }: { problems: Problem[] }) {
           <div
             key={index}
             className="bg-neutral-950 rounded-lg p-6 duration-300 transition-colors 
-            shadow-bevel-s group hover:bg-linear-to-b to-neutral-950 from-neutral-900/20"
+            shadow-bevel-s group hover:bg-linear-to-b to-neutral-950 from-neutral-800/60 hover:shadow-bevel-l"
           >
             <div className="flex flex-col sm:flex-row md:items-center justify-between">
               <h3 className="text-lg font-bold mb-2 text-white/90 mr-2">
