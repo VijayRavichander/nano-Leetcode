@@ -3,7 +3,7 @@
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Clock, Gauge, Copy, Check } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, RefObject } from "react";
 import { useOnClickOutside } from "usehooks-ts";
 import { STATUS_STYLES, formatSubmissionStatus } from "./submissionCard";
 
@@ -32,10 +32,10 @@ const modalVariants = {
 const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalProps) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const copyResetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useOnClickOutside(modalRef, onClose);
+  useOnClickOutside(modalRef as RefObject<HTMLElement>, onClose);
 
   useEffect(() => {
     setMounted(true);
