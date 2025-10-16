@@ -16,13 +16,12 @@ import {
 import { Google } from '@lobehub/icons';
 
 export default function Signin() {
-  const router = useRouter();
 
   const handleSignin = async () => {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/profile",
+        callbackURL: "/problem",
         errorCallbackURL: "/auth/login/error",  
       });
 
