@@ -1,67 +1,146 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String @id @default(cuid())
-  email    String @unique
-  password String
-  type     String @default("user")
+type CodeAndLanguage {
+  language String
+  code     String
+}
 
-  // Secondary
+type TestCases {
+  input  String
+  output String
+}
+
+
+type ProblemDescriptionTestCases {
+  input       String
+  output      String
+  explanation String
+} 
+
+
+model User {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime
+  updatedAt DateTime  
+
+  name          String  
+  type        String       @default("user")
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+
+  sessions Session[]
+  accounts Account[]
+  submissions Submission[]
+
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime
+  updatedAt DateTime
+
+  expiresAt      DateTime
+  token          String   @unique
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime
+  updatedAt DateTime
+
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  @@map("verifications")
+}
+
+model Problem {
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  tags        String[]
+  title       String
+  difficulty  String
+  constraints String[]
+  description String
+  testCases   ProblemDescriptionTestCases[]
+  slug        String             @unique
+  type        String             @default("None") // Contest, Non_Contest
+  solved      Int                @default(0)
+
+  // Test Cases
+  visibleTestCases TestCases[]
+  hiddenTestCases TestCases[]
+
+  // CodeEditor Boilerplate Code
+  functionCode CodeAndLanguage[]
+
+  // Embedded array
+  completeCode CodeAndLanguage[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
   submissions Submission[]
 }
 
-model ProblemInfo {
-  id             String        @id @default(cuid())
-  metaData       Json
-  slug           String        @unique
-  type           String        @default("None")
-  solved         Int           @default(0)
-  createdAt      DateTime      @default(now())
-  sampleTestCase Json[]
-  testCases      Json[]
-  functionCode   Json // Function Code
-  defaultCode    DefaultCode[]
-  submissions    Submission[]
-}
-
-model DefaultCode {
-  id         String   @id @default(cuid())
-  code       Json // Entire Code
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  testCases  Json
-
-  // Secondary
-  problemId String
-  problem   ProblemInfo @relation(fields: [problemId], references: [id])
-}
-
 model Submission {
-  id         String           @id @default(cuid())
-  code       Json
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  code       String
   languageId Int
   status     SubmissionResult @default(PENDING)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
-  tokens     Json[]
-  // Secondary
-  problemId String
-  userId    String
-  problem   ProblemInfo @relation(fields: [problemId], references: [id])
-  user      User        @relation(fields: [userId], references: [id])
+  judgetokens     String[]
+
+  max_cpu_time    Int?        @default(-1)
+  max_memory Int?        @default(-1)
+
+  // References to other collections
+  problemId String  @db.ObjectId
+  userId    String  @db.ObjectId
+  problem   Problem @relation(fields: [problemId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
 }
 
 enum SubmissionResult {
