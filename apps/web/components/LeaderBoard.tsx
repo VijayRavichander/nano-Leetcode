@@ -1,25 +1,43 @@
-import { useTab } from "@/lib/store/uiStore";
+"use client";
+
 import { Button } from "./ui/button";
 import { ArrowLeft, Trophy } from "lucide-react";
 
-const LeaderBoardTab = ({ sidebarWidth}: {sidebarWidth: number}) => {
-  const { tab, setTab } = useTab();
+interface LeaderBoardTabProps {
+  sidebarWidth?: number;
+  onBack?: () => void;
+  className?: string;
+}
+
+const LeaderBoardTab = ({
+  sidebarWidth,
+  onBack,
+  className,
+}: LeaderBoardTabProps) => {
+  const widthStyle = sidebarWidth ? { width: `${sidebarWidth}px` } : undefined;
 
   return (
-    <div
-      className={`${tab == "leaderboard" ? "" : "hidden"} border-r border-gray-700 overflow-y-auto p-6`}
-      style={{ width: `${sidebarWidth}px` }}
+    <section
+      className={`h-full overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+      style={widthStyle}
     >
-    
-      <Button
-        onClick={() => {
-          setTab("problem");
-        }}
-      >
-        <ArrowLeft />
-      </Button>
-      <span className="px-5 text-md font-bold text-white">LeaderBoard</span>
-    </div>
+      <div className="mb-4 flex items-center">
+        {onBack ? (
+          <Button
+            onClick={onBack}
+            className="h-7 border border-white/10 bg-transparent px-2 hover:bg-white/10"
+          >
+            <ArrowLeft />
+          </Button>
+        ) : null}
+        <span className="px-3 text-sm font-semibold text-white">Leaderboard</span>
+      </div>
+
+      <div className="flex h-[16rem] items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/20 text-sm text-zinc-400">
+        <Trophy className="mr-2 h-4 w-4" />
+        Leaderboard will be available here.
+      </div>
+    </section>
   );
 };
 

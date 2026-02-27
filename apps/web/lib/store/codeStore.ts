@@ -1,7 +1,13 @@
 "use client";
 
-import { create } from 'zustand';
-import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from "zustand/middleware";
+
+export type SupportedLanguage = "cpp" | "python";
 
 const noopStorage: StateStorage = {
   getItem: () => null,
@@ -10,56 +16,30 @@ const noopStorage: StateStorage = {
 };
 
 const createPersistStorage = () =>
-  createJSONStorage(() => (typeof window === 'undefined' ? noopStorage : window.localStorage));
-
-const getStorage = () =>
-  typeof window === 'undefined' ? undefined : window.localStorage;
+  createJSONStorage(() =>
+    typeof window === "undefined" ? noopStorage : window.localStorage
+  );
 
 type CodeState = {
-  codeBySlug: Record<string, string>; // Store code per problem slug
+  codeBySlug: Record<string, string>;
   currentSlug: string;
-  setCodeForSlug: (slug: string, code: string) => void;
-  getCodeForSlug: (slug: string) => string;
   setCurrentSlug: (slug: string) => void;
-  getCurrentCode: () => string;
+  setCodeForSlug: (slug: string, code: string) => void;
+  ensureCodeForSlug: (slug: string, defaultCode: string) => void;
   resetCodeForSlug: (slug: string, defaultCode: string) => void;
 };
 
-type LanuageState = {
-    lang: string,
-    setLang: (newLang: string) => void;
-}
-
-type TestCase = {
-    id: number
-    description: string
-    time: number, 
-    memory: number,
-    stdout: string,
-}
-
-type TestCaseState = {
-    statusBySlug: Record<string, TestCase[]>
-    setTestCaseStatus: (slug: string, newTestCaseStatus: TestCase[]) => void
-    clearTestCaseStatus: (slug?: string) => void
-}
-
-type Slug = {
-    slug: string
-    setSlug: (newSlug: string) => void;
-}
-
-export const useSlugStore = create<Slug>((set) => ({
-    slug: '',
-    setSlug: (newSlug) => set({slug: newSlug})
-}))
-
+type LanguageState = {
+  lang: SupportedLanguage;
+  setLang: (language: SupportedLanguage) => void;
+};
 
 export const useCodeStore = create<CodeState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       codeBySlug: {},
-      currentSlug: '',
+      currentSlug: "",
+      setCurrentSlug: (slug) => set({ currentSlug: slug }),
       setCodeForSlug: (slug, code) =>
         set((state) => ({
           codeBySlug: {
@@ -67,15 +47,19 @@ export const useCodeStore = create<CodeState>()(
             [slug]: code,
           },
         })),
-      getCodeForSlug: (slug) => {
-        const state = get();
-        return state.codeBySlug[slug] || '';
-      },
-      setCurrentSlug: (slug) => set({ currentSlug: slug }),
-      getCurrentCode: () => {
-        const state = get();
-        return state.codeBySlug[state.currentSlug] || '';
-      },
+      ensureCodeForSlug: (slug, defaultCode) =>
+        set((state) => {
+          if (state.codeBySlug[slug]) {
+            return state;
+          }
+
+          return {
+            codeBySlug: {
+              ...state.codeBySlug,
+              [slug]: defaultCode,
+            },
+          };
+        }),
       resetCodeForSlug: (slug, defaultCode) =>
         set((state) => ({
           codeBySlug: {
@@ -85,52 +69,41 @@ export const useCodeStore = create<CodeState>()(
         })),
     }),
     {
-      name: 'code-store',
+      name: "code-store",
       storage: createPersistStorage(),
     }
   )
 );
 
-
-export const useLangStore = create<LanuageState>()(
+export const useLangStore = create<LanguageState>()(
   persist(
     (set) => ({
-      lang: 'cpp',
-      setLang: (newLang) => set({ lang: newLang }),
+      lang: "cpp",
+      setLang: (language) => set({ lang: language }),
     }),
     {
-      name: 'language-store',
+      name: "language-store",
       storage: createPersistStorage(),
     }
   )
 );
-  
 
-export const useTestCaseStore = create<TestCaseState>()(
-  persist(
-    (set) => ({
-      statusBySlug: {},
-      setTestCaseStatus: (slug, newTestCaseStatus) =>
-        set((state) => ({
-          statusBySlug: {
-            ...state.statusBySlug,
-            [slug]: newTestCaseStatus,
-          },
-        })),
-      clearTestCaseStatus: (slug) =>
-        set((state) => {
-          if (!slug) {
-            return { statusBySlug: {} };
-          }
-          // _removed is the slug that is being removed
-          // rest is the remaining slugs
-          const { [slug]: _removed, ...rest } = state.statusBySlug;
-          return { statusBySlug: rest };
-        }),
-    }),
-    {
-      name: 'test-case-store',
-      storage: createPersistStorage(),
+export const useCurrentSlug = () => useCodeStore((state) => state.currentSlug);
+
+export const useCurrentCode = () =>
+  useCodeStore((state) => {
+    if (!state.currentSlug) {
+      return "";
     }
-  )
-);
+
+    return state.codeBySlug[state.currentSlug] ?? "";
+  });
+
+export const useCodeForSlug = (slug: string | null | undefined) =>
+  useCodeStore((state) => {
+    if (!slug) {
+      return "";
+    }
+
+    return state.codeBySlug[slug] ?? "";
+  });

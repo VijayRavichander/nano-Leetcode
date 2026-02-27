@@ -7,7 +7,18 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
-const NavbarActionDropDown = ({ session }: { session: any }) => {
+interface NavbarSession {
+  data?:
+    | {
+        user?: {
+          name?: string | null;
+          email?: string | null;
+        };
+      }
+    | null;
+}
+
+const NavbarActionDropDown = ({ session }: { session: NavbarSession }) => {
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -24,26 +35,19 @@ const NavbarActionDropDown = ({ session }: { session: any }) => {
     <DropdownMenu>
       <DropdownMenuTrigger
         className="
-          bg-neutral-950 shadow-bevel-s
-          text-white/90 hover:text-white
-          text-xs!
-          px-2 rounded-md
-          transition-all
-          cursor-pointer focus:outline-none
+          cursor-pointer rounded-md
+          bg-neutral-950 px-2 text-xs! text-white/90
+          transition-all hover:bg-linear-to-b hover:text-white
+          to-neutral-900 from-neutral-800
+          focus:outline-none
           data-[state=open]:scale-[1.01]
-          hover:bg-linear-to-b to-neutral-900 from-neutral-800
         "
       >
         {session.data?.user?.name || session.data?.user?.email || "User"}
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-neutral-900 text-white/90 border border-white/10 cursor-pointer font-sm">
-        <DropdownMenuItem className="hover:bg-white/90!">
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="hover:bg-white/90!"
-          onClick={handleSignOut}
-        >
+      <DropdownMenuContent className="cursor-pointer border border-white/10 bg-neutral-900 font-sm text-white/90">
+        <DropdownMenuItem className="hover:bg-white/90!">Profile</DropdownMenuItem>
+        <DropdownMenuItem className="hover:bg-white/90!" onClick={handleSignOut}>
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>

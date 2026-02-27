@@ -1,14 +1,7 @@
-import { useTestCaseStore } from "@/lib/store/codeStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { CheckIcon, X } from "lucide-react";
-import { useRunButtonState } from "@/lib/store/uiStore";
-const EMPTY_TEST_RESULTS: {
-  id: number;
-  description: string;
-  time: number;
-  memory: number;
-  stdout: string;
-}[] = [];
+import { useExecutionStore, useTestCaseStatusForSlug } from "@/lib/store/executionStore";
+import type { VisibleTestCase } from "@/lib/types/problem";
 
 const SkeletonPulse = ({ className = "" }: { className?: string }) => (
   <div className={`animate-pulse rounded-md bg-white/10 ${className}`} />
@@ -18,30 +11,30 @@ export const SubmissionResultSkeleton = () => {
   const placeholderTabs = Array.from({ length: 2 });
 
   return (
-    <div className="h-full bg-[#121212] overflow-auto">
-      <div className="h-full overflow-auto py-2 px-4 text-sm text-gray-300">
-        <div className="flex flex-wrap gap-4 pb-6">
+    <div className="h-full overflow-auto bg-[#0f1115]">
+      <div className="h-full overflow-auto px-3.5 py-3 text-sm text-zinc-300">
+        <div className="flex flex-wrap gap-2 pb-4">
           {placeholderTabs.map((_, index) => (
             <div
-              key={index}
-              className="flex w-32 h-10 flex-col items-center gap-3 rounded-2xl border border-white/5 bg-white/10 px-4 py-4"
+              key={`placeholder-${index}`}
+              className="flex h-8 w-24 flex-col items-center justify-center rounded-lg border border-white/5 bg-white/10 px-3"
             >
-              <SkeletonPulse className="h-2 w-20" />
+              <SkeletonPulse className="h-2 w-14" />
             </div>
           ))}
         </div>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between px-2">
-            <SkeletonPulse className="h-6 w-32" />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <SkeletonPulse className="h-5 w-24" />
             <SkeletonPulse className="h-4 w-24" />
           </div>
 
-          <div className="space-y-4 rounded-2xl border border-white/5 bg-white/10 p-5">
-            <SkeletonPulse className="h-4 w-36" />
-            <SkeletonPulse className="h-4 w-64" />
+          <div className="space-y-3 rounded-xl border border-white/5 bg-white/10 p-4">
+            <SkeletonPulse className="h-4 w-24" />
+            <SkeletonPulse className="h-4 w-48" />
             <SkeletonPulse className="h-2 w-full" />
-            <SkeletonPulse className="h-4 w-28" />
+            <SkeletonPulse className="h-4 w-20" />
           </div>
         </div>
       </div>
@@ -49,140 +42,113 @@ export const SubmissionResultSkeleton = () => {
   );
 };
 
-const SubmissionResult = ({
-  problemDesc,
-  problemSlug,
-}: {
-  problemDesc: any;
+interface SubmissionResultProps {
+  problemDesc: {
+    sampleTestCase: VisibleTestCase[];
+  };
   problemSlug: string | null;
-}) => {
-  const { isRunning } = useRunButtonState();
+}
 
-  const testCaseStatus = useTestCaseStore((state) =>
-    problemSlug
-      ? (state.statusBySlug[problemSlug] ?? EMPTY_TEST_RESULTS)
-      : EMPTY_TEST_RESULTS
-  );
+const getStatusColor = (description?: string) => {
+  if (!description) {
+    return "text-gray-500";
+  }
 
-  const sampleTestCases = Array.isArray(problemDesc?.sampleTestCase)
+  switch (description) {
+    case "Accepted":
+      return "text-emerald-400";
+    case "Wrong Answer":
+    case "Runtime Error":
+      return "text-red-400";
+    case "Compilation Error":
+      return "text-rose-400";
+    case "Time Limit Exceeded":
+      return "text-red-500";
+    case "Memory Limit Exceeded":
+      return "text-amber-400";
+    default:
+      return "text-red-700";
+  }
+};
+
+const buildTestCaseKey = (testCase: VisibleTestCase, index: number): string => {
+  return `${index}-${testCase.input}-${testCase.output}`;
+};
+
+const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) => {
+  const isRunning = useExecutionStore((state) => state.isRunning);
+  const testCaseStatus = useTestCaseStatusForSlug(problemSlug);
+
+  const sampleTestCases = Array.isArray(problemDesc.sampleTestCase)
     ? problemDesc.sampleTestCase
-    : null;
+    : [];
 
-  if (!sampleTestCases || isRunning) {
+  if (sampleTestCases.length === 0 || isRunning) {
     return <SubmissionResultSkeleton />;
   }
 
-  const allPassed =
-    testCaseStatus?.length &&
-    testCaseStatus.every((test) => test.description === "Accepted");
-
-  const getStatusColor = (description?: string) => {
-    if (!description) {
-      return "text-gray-500";
-    }
-
-    switch (description) {
-      case "Accepted":
-        return "text-emerald-400";
-      case "Wrong Answer":
-      case "Runtime Error":
-        return "text-red-400";
-      case "Compilation Error":
-        return "text-rose-400";
-      case "Time Limit Exceeded":
-        return "text-red-500";
-      case "Memory Limit Exceeded":
-        return "text-amber-400";
-      default:
-        return "text-red-700";
-    }
-  };
-
   return (
-    <div className="h-full bg-[#121212] overflow-auto">
-      {/* Console Output */}
+    <div className="h-full overflow-auto bg-[#0f1115]">
       <div className="h-full overflow-auto">
-        {/* <div
-          className={`py-1 px-4 text-xl font-semibold my-3 ${testCaseStatus?.length > 0 ? "" : "hidden"}`}
-        >
-          {testCaseStatus?.length > 0 ? (
-            <span
-              className={`px-2 py-2 rounded-lg text-sm bg-black/95 ${
-                allPassed ? "text-green-500" : "text-red-800"
-              }`}
-            >
-              {allPassed ? "Accepted" : "Failed"}
-            </span>
-          ) : null}
-        </div> */}
-        <div className="py-2 px-4 text-sm">
-          <Tabs defaultValue="0" className="font-mono text-sm text-gray-300">
-            <div className=" bg-[#121212] rounded-2xl ">
-              <TabsList className="bg-neutral-950 py-6">
-                {sampleTestCases.map((t: any, index: number) => {
-                  let circleColor = "";
-
-                  if (testCaseStatus && testCaseStatus.length != 0) {
-                    if (testCaseStatus[index]!.description === "Accepted") {
-                      circleColor = "green";
-                    } else if (
-                      testCaseStatus[index]!.description !== "Accepted"
-                    ) {
-                      circleColor = "red";
-                    }
-                  }
+        <div className="px-3.5 py-3 text-sm">
+          <Tabs defaultValue="0" className="text-sm text-zinc-300">
+            <div className="rounded-xl bg-[#0f1115]">
+              <TabsList className="bg-neutral-950 p-1.5">
+                {sampleTestCases.map((testCase, index) => {
+                  const status = testCaseStatus[index];
+                  const isAccepted = status?.description === "Accepted";
+                  const isRejected = Boolean(status) && !isAccepted;
 
                   return (
                     <TabsTrigger
-                      key={index}
+                      key={buildTestCaseKey(testCase, index)}
                       value={index.toString()}
-                      className="font-mono text-sm text-white/80 mx-5 py-4 px-3!  data-[state=active]:text-white data-[state=active]:bg-neutral-800"
+                      className="mx-1 px-2.5 py-1.5 text-xs font-medium text-zinc-300 data-[state=active]:bg-neutral-800 data-[state=active]:text-white"
                     >
                       <div>Test Case {index + 1}</div>
                       <div>
-                        {circleColor === "green" && (
+                        {isAccepted ? (
                           <CheckIcon
-                            className=" ml-2 w-5 h-5 text-green-500"
+                            className="ml-1.5 h-4 w-4 text-green-500"
                             strokeWidth={3}
                           />
-                        )}
-                        {circleColor === "red" && (
+                        ) : null}
+                        {isRejected ? (
                           <X
-                            className="ml-2 w-5 h-5 text-red-500"
+                            className="ml-1.5 h-4 w-4 text-red-500"
                             strokeWidth={3}
                           />
-                        )}
+                        ) : null}
                       </div>
                     </TabsTrigger>
                   );
                 })}
               </TabsList>
             </div>
-            <div className="my-1 py-2">
-              {sampleTestCases.map((testcase: any, index: number) => {
+
+            <div className="mt-2 py-1">
+              {sampleTestCases.map((testCase, index) => {
                 const status = testCaseStatus[index];
                 const statusColor = getStatusColor(status?.description);
 
                 return (
                   <TabsContent
-                    key={index}
+                    key={buildTestCaseKey(testCase, index)}
                     value={index.toString()}
                     className="py-2"
                   >
-                    <div className="flex text-sm justify-between px-2 pb-6 pt-2">
-                      <div className={`text-lg font-bold ${statusColor}`}>
-                        {status && status.description}
+                    <div className="flex items-center justify-between px-1 pb-4 pt-1 text-sm">
+                      <div className={`text-base font-semibold ${statusColor}`}>
+                        {status?.description ?? "Not run"}
                       </div>
-                      <div className="">
-                        {status && "Runtime: " + status.time * 1000 + " ms"}
+                      <div className="text-xs text-zinc-400">
+                        {status ? `Runtime: ${status.time * 1000} ms` : "Runtime: --"}
                       </div>
                     </div>
 
-                    <div className="bg-neutral-950 rounded-2xl py-4 px-5">
-                      {testcase.input}
+                    <div className="rounded-lg bg-neutral-950 px-3 py-2.5 font-mono text-[11px] leading-5">
+                      {testCase.input}
                     </div>
-                    <div>{/* {status && status.memory + " KB"} */}</div>
-                    <div>{/* {status && status.stdout} */}</div>
                   </TabsContent>
                 );
               })}

@@ -1,24 +1,25 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { X, Clock, Gauge, Copy, Check } from "lucide-react";
-import { useEffect, useRef, useState, RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useOnClickOutside } from "usehooks-ts";
-import { STATUS_STYLES, formatSubmissionStatus } from "./submissionCard";
+import { formatSubmissionStatus } from "./submissionCard";
+import type { SubmissionListItem } from "@/lib/types/submission";
 
 interface SubmissionDetailsModalProps {
-  submission: any | null;
+  submission: SubmissionListItem | null;
   onClose: () => void;
 }
 
-const overlayVariants = {
+const overlayVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 0.6 },
   exit: { opacity: 0 },
 };
 
-const modalVariants = {
+const modalVariants: Variants = {
   hidden: { opacity: 0, scale: 0.9, y: 20 },
   visible: {
     opacity: 1,
@@ -29,7 +30,10 @@ const modalVariants = {
   exit: { opacity: 0, scale: 0.92, y: 16 },
 };
 
-const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalProps) => {
+const SubmissionDetailsModal = ({
+  submission,
+  onClose,
+}: SubmissionDetailsModalProps) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -83,8 +87,8 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
       copyResetTimeout.current = setTimeout(() => {
         setCopied(false);
       }, 2000);
-    } catch (error) {
-      console.error("Failed to copy submission code", error);
+    } catch {
+      setCopied(false);
     }
   };
 
@@ -111,7 +115,6 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
             initial="hidden"
             animate="visible"
             exit="exit"
-            // @ts-ignore
             variants={modalVariants}
           >
             <motion.div
@@ -141,7 +144,7 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
                     );
                   })()}
                 </div>
-                <span className="rounded-full bg-white/5 px-3 py-1 mt-5 text-xs text-white/70">
+                <span className="mt-5 rounded-full bg-white/5 px-3 py-1 text-xs text-white/70">
                   {new Date(submission.createdAt).toLocaleString()}
                 </span>
               </motion.div>
@@ -151,7 +154,7 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
                   <Clock className="h-4 w-4 text-blue-300" />
                   <span className="text-white/50">Runtime</span>
                   <span className="font-medium text-white">
-                    {submission.max_cpu_time !== -1
+                    {submission.max_cpu_time != null && submission.max_cpu_time !== -1
                       ? `${submission.max_cpu_time * 1000} ms`
                       : "Not available"}
                   </span>
@@ -171,7 +174,7 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
                 <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-wide text-white/40">
                   <span>Submitted Code</span>
                   <span>
-                    {submission.code?.length ? `${submission.code.length} chars` : ""}
+                    {submission.code.length ? `${submission.code.length} chars` : ""}
                   </span>
                 </div>
                 <div className="relative">
@@ -199,11 +202,10 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
                     layout
                     className="max-h-72 overflow-auto rounded-xl bg-black/60 p-4 pr-14 font-mono text-xs text-white/80"
                   >
-                    {submission.code ?? "Code not available."}
+                    {submission.code || "Code not available."}
                   </motion.pre>
                 </div>
               </motion.div>
-
             </motion.div>
           </motion.div>
         </>
@@ -215,4 +217,3 @@ const SubmissionDetailsModal = ({ submission, onClose }: SubmissionDetailsModalP
 };
 
 export default SubmissionDetailsModal;
-

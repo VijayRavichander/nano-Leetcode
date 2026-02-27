@@ -1,19 +1,14 @@
-import { Clock, BarChart2, Lock, ArrowRight } from "lucide-react";
+import { Clock, BarChart2, Lock } from "lucide-react";
 import { Button } from "../ui/button";
+import type { SubmissionListItem, SubmissionStatus } from "@/lib/types/submission";
 
-type SubmissionResult =
-  | "ACCEPTED"
-  | "REJECTED"
-  | "PENDING"
-  | "TLE"
-  | "COMPILATIONERROR"
-  | "RUNTIMEERROR"
-  | "INTERNALERROR";
-
-export const STATUS_STYLES: Record<SubmissionResult, {
-  label: string;
-  textClass: string;
-}> = {
+export const STATUS_STYLES: Record<
+  SubmissionStatus,
+  {
+    label: string;
+    textClass: string;
+  }
+> = {
   ACCEPTED: {
     label: "Accepted",
     textClass: "text-emerald-300",
@@ -25,7 +20,6 @@ export const STATUS_STYLES: Record<SubmissionResult, {
   PENDING: {
     label: "In Progress",
     textClass: "text-amber-200",
-
   },
   TLE: {
     label: "Time Limit Exceeded",
@@ -45,12 +39,16 @@ export const STATUS_STYLES: Record<SubmissionResult, {
   },
 };
 
-export const formatSubmissionStatus = (status: string | null | undefined) => {
+export const formatSubmissionStatus = (
+  status: string | null | undefined
+): { label: string; textClass: string } => {
   if (!status) {
     return STATUS_STYLES.PENDING;
   }
 
-  const normalized = status.replace(/\s+/g, "").toUpperCase() as SubmissionResult;
+  const normalized = status
+    .replace(/\s+/g, "")
+    .toUpperCase() as SubmissionStatus;
 
   if (normalized in STATUS_STYLES) {
     return STATUS_STYLES[normalized];
@@ -59,54 +57,53 @@ export const formatSubmissionStatus = (status: string | null | undefined) => {
   return STATUS_STYLES.PENDING;
 };
 
+interface SubmissionCardProps {
+  submission: SubmissionListItem;
+  setCodeInEditor: (code: string) => void;
+  onViewSubmission?: (submission: SubmissionListItem) => void;
+}
+
 const SubmissionCard = ({
   submission,
   setCodeInEditor,
   onViewSubmission,
-}: {
-  submission: any;
-  setCodeInEditor: any;
-  onViewSubmission?: (submission: any) => void;
-}) => {
+}: SubmissionCardProps) => {
   const statusStyle = formatSubmissionStatus(submission.status);
   const utcDate = new Date(submission.createdAt);
-  // Convert to local date string
   const localDateString = utcDate.toLocaleString();
 
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-2 hover:bg-zinc-800/50 transition-colors">
+    <div className="rounded-xl bg-zinc-900/50 p-2 transition-colors hover:bg-zinc-800/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex items-center rounded-full py-1 text-sm font-medium ${statusStyle.textClass}`}
           >
-            <span className={`h-2 w-2 rounded-full font-bold`} />
+            <span className="h-2 w-2 rounded-full font-bold" />
             {statusStyle.label}
           </span>
-          <span className="text-zinc-400 text-xs">{localDateString}</span>
+          <span className="text-xs text-zinc-400">{localDateString}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="w-3 h-3 text-blue-400" />
+          <Clock className="h-3 w-3 text-blue-400" />
           <span className="text-xs">
-            {submission.max_cpu_time != -1
-              ? submission.max_cpu_time * 1000 + " ms"
+            {submission.max_cpu_time != null && submission.max_cpu_time !== -1
+              ? `${submission.max_cpu_time * 1000} ms`
               : "NA"}
           </span>
         </div>
       </div>
-      <div className="flex items-center justify-between mt-2">
+      <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart2 className="w-3 h-3 text-blue-400" />
-          <Lock className="w-3 h-3 text-zinc-600" />
-          <span className="text-zinc-400 text-xs">percentile</span>
+          <BarChart2 className="h-3 w-3 text-blue-400" />
+          <Lock className="h-3 w-3 text-zinc-600" />
+          <span className="text-xs text-zinc-400">percentile</span>
         </div>
         <div className="flex items-center gap-1 text-blue-400 transition-colors">
           <Button
-            className="hover:text-blue-300 text-xs"
+            className="text-xs hover:text-blue-300"
             onClick={() => {
-              if (typeof setCodeInEditor === "function") {
-                setCodeInEditor(submission.code);
-              }
+              setCodeInEditor(submission.code);
               onViewSubmission?.(submission);
             }}
           >
@@ -119,5 +116,3 @@ const SubmissionCard = ({
 };
 
 export default SubmissionCard;
-
-

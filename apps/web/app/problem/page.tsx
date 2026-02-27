@@ -1,9 +1,9 @@
 import Problems from "@/components/Problems";
 import { db } from "@repo/db";
-import { type Problem } from "@/components/Problems";
+import type { ProblemListItem } from "@/lib/types/problem";
 
 export default async function App() {
-  const res: Problem[] = await db.problem.findMany({
+  const problems = await db.problem.findMany({
     where: {},
     select: {
       title: true,
@@ -12,6 +12,11 @@ export default async function App() {
       tags: true,
     },
   });
+
+  const res: ProblemListItem[] = problems.map((problem) => ({
+    ...problem,
+    difficulty: problem.difficulty as ProblemListItem["difficulty"],
+  }));
 
   return <Problems problems={res} />;
 }
