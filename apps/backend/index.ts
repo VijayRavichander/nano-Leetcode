@@ -12,7 +12,13 @@ const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
 const JUDGE0_HOST = process.env.JUDGE0_HOST;
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000", // Local development
+    "https://litecode.vijayravichander.com", // Production domain
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 
@@ -148,9 +154,6 @@ app.post("/v1/run", authMiddleware, async (req, res) => {
         }
       );
 
-      // const res = {status: 401, data: {
-      //     error: "failed"
-      // }}
 
       // Check for errors or non-2xx status codes here
       if (res.status !== 200 || res.data.error) {

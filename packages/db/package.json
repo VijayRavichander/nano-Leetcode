@@ -2,6 +2,11 @@
   "name": "@repo/db",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma",
+    "migrate:mongo-to-postgres": "bun run scripts/migrate-mongo-to-postgres.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "prisma": "^6.5.0"
@@ -10,6 +15,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0"
+    "@prisma/client": "^6.5.0",
+    "mongodb": "^7.1.0"
   }
 }

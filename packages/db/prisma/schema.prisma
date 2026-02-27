@@ -3,49 +3,30 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-type CodeAndLanguage {
-  language String
-  code     String
-}
-
-type TestCases {
-  input  String
-  output String
-}
-
-
-type ProblemDescriptionTestCases {
-  input       String
-  output      String
-  explanation String
-} 
-
-
 model User {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime
-  updatedAt DateTime  
+  updatedAt DateTime
 
-  name          String  
-  type        String       @default("user")
-  email         String    @unique
+  name          String
+  type          String  @default("user")
+  email         String  @unique
   emailVerified Boolean
   image         String?
 
-  sessions Session[]
-  accounts Account[]
+  sessions    Session[]
+  accounts    Account[]
   submissions Submission[]
-
 
   @@map("users")
 }
 
 model Session {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime
   updatedAt DateTime
 
@@ -55,14 +36,14 @@ model Session {
   userAgent      String?
   impersonatedBy String?
 
-  userId String @db.ObjectId
+  userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model Account {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime
   updatedAt DateTime
 
@@ -76,14 +57,14 @@ model Account {
   scope                 String?
   password              String?
 
-  userId String @db.ObjectId
+  userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("accounts")
 }
 
 model Verification {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(uuid()) @db.Uuid
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -95,26 +76,26 @@ model Verification {
 }
 
 model Problem {
-  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid()) @db.Uuid
   tags        String[]
   title       String
   difficulty  String
   constraints String[]
   description String
-  testCases   ProblemDescriptionTestCases[]
-  slug        String             @unique
-  type        String             @default("None") // Contest, Non_Contest
-  solved      Int                @default(0)
+  testCases   Json?
+  slug        String   @unique
+  type        String   @default("None") // Contest, Non_Contest
+  solved      Int      @default(0)
 
   // Test Cases
-  visibleTestCases TestCases[]
-  hiddenTestCases TestCases[]
+  visibleTestCases Json?
+  hiddenTestCases  Json?
 
   // CodeEditor Boilerplate Code
-  functionCode CodeAndLanguage[]
+  functionCode Json?
 
   // Embedded array
-  completeCode CodeAndLanguage[]
+  completeCode Json?
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -125,20 +106,20 @@ model Problem {
 }
 
 model Submission {
-  id         String           @id @default(auto()) @map("_id") @db.ObjectId
-  code       String
-  languageId Int
-  status     SubmissionResult @default(PENDING)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  judgetokens     String[]
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String
+  languageId  Int
+  status      SubmissionResult @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  judgetokens String[]
 
-  max_cpu_time    Int?        @default(-1)
-  max_memory Int?        @default(-1)
+  max_cpu_time Int? @default(-1)
+  max_memory   Int? @default(-1)
 
   // References to other collections
-  problemId String  @db.ObjectId
-  userId    String  @db.ObjectId
+  problemId String  @db.Uuid
+  userId    String  @db.Uuid
   problem   Problem @relation(fields: [problemId], references: [id])
   user      User    @relation(fields: [userId], references: [id])
 }

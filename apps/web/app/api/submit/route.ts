@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@repo/db"
 import { auth } from "@/lib/auth";
 import axios from "axios";
+import {
+  parseCodeTemplates,
+  parseSimpleTestCases,
+} from "@/lib/problem/db-json";
 
 
 
@@ -41,8 +45,11 @@ export async function POST(req: NextRequest) {
     if(completeCodeRes == null || completeCodeRes.completeCode == null){
       return NextResponse.json({ error: "Bad Request" }, { status: 401 });
     }
+
+    const completeCode = parseCodeTemplates(completeCodeRes.completeCode);
+    const hiddenTestCases = parseSimpleTestCases(completeCodeRes.hiddenTestCases);
   
-    let finalCode = completeCodeRes.completeCode.find((code: any) => code.language === language)?.code;
+    let finalCode = completeCode.find((code) => code.language === language)?.code;
 
     if (!finalCode) {
       return NextResponse.json(
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     const finalCodeEncoded = Buffer.from(finalCode).toString('base64')
     
-    const submissions = completeCodeRes.hiddenTestCases?.map((testcase: any, index: number) => ({
+    const submissions = hiddenTestCases.map((testcase) => ({
       source_code: finalCodeEncoded,
       language_id: languagetoIdMap[language],
       stdin: Buffer.from(testcase.input).toString('base64'),

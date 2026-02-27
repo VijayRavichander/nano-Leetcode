@@ -2,6 +2,10 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/db";
 import axios from "axios";
+import {
+  parseCodeTemplates,
+  parseSimpleTestCases,
+} from "@/lib/problem/db-json";
 
 const JUDGE0_URL = process.env.JUDGE0_URL;
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
@@ -58,11 +62,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!problem?.completeCode?.length) {
+    if (!problem) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    const template = problem.completeCode.find(
+    const completeCode = parseCodeTemplates(problem.completeCode);
+    const testCases = parseSimpleTestCases(problem.visibleTestCases);
+
+    const template = completeCode.find(
       (code) => code.language === language
     )?.code;
     if (!template) {
@@ -72,7 +79,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const testCases = problem.visibleTestCases ?? [];
     if (!testCases.length) {
       return NextResponse.json(
         { error: "Something went wrong" },

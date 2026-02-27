@@ -1,5 +1,10 @@
 import { db } from "@repo/db";
 import { NextResponse } from "next/server";
+import {
+  parseCodeTemplates,
+  parseDescriptionTestCases,
+  parseSimpleTestCases,
+} from "@/lib/problem/db-json";
 
 
 // "getProblem?slug=${problemId}"
@@ -27,5 +32,14 @@ export async function GET(req: Request){
         }
     })
 
-    return NextResponse.json(problem);
+    if (!problem) {
+      return NextResponse.json(null);
+    }
+
+    return NextResponse.json({
+      ...problem,
+      testCases: parseDescriptionTestCases(problem.testCases),
+      functionCode: parseCodeTemplates(problem.functionCode),
+      visibleTestCases: parseSimpleTestCases(problem.visibleTestCases),
+    });
 }
