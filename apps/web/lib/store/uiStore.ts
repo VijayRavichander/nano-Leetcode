@@ -1,53 +1,30 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import type { WorkspaceMode } from "@/lib/types/workspace";
 
-type leftTab = {
-    tab: string
-    setTab: (newTab: string) => void;
-}
+type ProblemUIState = {
+  tab: WorkspaceMode;
+  showNavControls: boolean;
+  problemId: string;
+  setTab: (tab: WorkspaceMode) => void;
+  setShowNavControls: (show: boolean) => void;
+  setProblemId: (problemId: string) => void;
+};
 
-export const useTab = create<leftTab>((set) => ({
-    tab: 'problem',
-    setTab: (newTab) => set({tab: newTab})
-}))
+type TokenState = {
+  tokenStore: string;
+  setTokenStore: (newToken: string) => void;
+};
 
-type RunButtonState = {
-    isRunning: boolean
-    setIsRunning: (isRunning: boolean) => void
-}
+export const useProblemUIStore = create<ProblemUIState>((set) => ({
+  tab: "problem",
+  showNavControls: false,
+  problemId: "",
+  setTab: (tab) => set({ tab }),
+  setShowNavControls: (showNavControls) => set({ showNavControls }),
+  setProblemId: (problemId) => set({ problemId }),
+}));
 
-export const useRunButtonState = create<RunButtonState>((set) => ({
-    isRunning: false,
-    setIsRunning: (isRunning) => set({isRunning})
-}))
-
-    
-type problemIDState = {
-    problemIDStore: string
-    setProblemIDStore: (newproblemIDStore: string) => void;
-}
-
-export const useProblemIDStore = create<problemIDState>((set) => ({
-    problemIDStore: 'problem',
-    setProblemIDStore: (newproblemIDStore) => set({problemIDStore: newproblemIDStore})
-}))
-
-
-type navBarState = {
-    show: boolean
-    setShow: (newShow: boolean) => void;
-}
-
-export const useNavBarStore = create<navBarState>((set) => ({
-    show: false,
-    setShow: (newShow) => set({show: newShow})
-}))
-
-type tokenState = {
-    tokenStore: string
-    setTokenStore: (newToken: string) => void;
-}
-
-export const useTokenStore = create<tokenState>((set) => ({
-    tokenStore: "",
-    setTokenStore: (newToken) => set({tokenStore: newToken})
-}))
+export const useTokenStore = create<TokenState>((set) => ({
+  tokenStore: "",
+  setTokenStore: (newToken) => set({ tokenStore: newToken }),
+}));

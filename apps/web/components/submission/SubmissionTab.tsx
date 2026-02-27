@@ -1,107 +1,103 @@
-import { useProblemIDStore, useTab } from "@/lib/store/uiStore";
+"use client";
+
 import { Button } from "../ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { useCodeStore } from "@/lib/store/codeStore";
+import { getSubmissionsPage } from "@/lib/api/submission";
+import { useCodeStore, useCurrentSlug } from "@/lib/store/codeStore";
+import { useProblemUIStore } from "@/lib/store/uiStore";
 import SubmissionCard from "./submissionCard";
 import SubmissionDetailsModal from "./SubmissionDetailsModal";
+import type { SubmissionListItem } from "@/lib/types/submission";
 
-const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
-  const { tab, setTab } = useTab();
+const PAGE_SIZE = 5;
 
-  // isInitialLoading is true when the submissions tab is first loaded and the submissions are being fetched.
+interface SubmissionTabProps {
+  sidebarWidth?: number;
+  onBack?: () => void;
+  className?: string;
+}
+
+const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) => {
+  const problemId = useProblemUIStore((state) => state.problemId);
+
+  const setCodeForSlug = useCodeStore((state) => state.setCodeForSlug);
+  const currentSlug = useCurrentSlug();
+
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [authError, setAuthError] = useState(false);
-
-  // Cursor marks the last submission we returned; backend uses it to resume the next page.
   const [cursor, setCursor] = useState<string | null>(null);
-
-  // hasNext mirrors the API flag so the UI knows if additional pages are available.
   const [hasNext, setHasNext] = useState(true);
+  const [submissionsList, setSubmissionsList] = useState<SubmissionListItem[]>([]);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<SubmissionListItem | null>(null);
 
-  // Accumulates submissions as we append new pages during infinite scrolling.
-  const [submissionsList, setSubmissionsList] = useState<any[]>([]);
-
-  const { problemIDStore } = useProblemIDStore();
-  const { setCodeForSlug } = useCodeStore();
-  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isFetchingRef = useRef(false);
 
-  // Shared fetcher that either resets the list or appends the next page based on "append".
   const fetchSubmissions = useCallback(
     async (cursorParam: string | null, append: boolean) => {
-      if (!problemIDStore || isFetchingRef.current) {
+      if (!problemId || isFetchingRef.current) {
         return;
       }
 
       isFetchingRef.current = true;
       setIsFetching(true);
-      try {
-        const params = new URLSearchParams({ problemId: problemIDStore });
-        if (cursorParam) {
-          params.set("cursor", cursorParam);
-        }
 
-        const res = await axios.get(`/api/submissions?${params.toString()}`);
-        const { data, nextCursor, hasNext: nextHasNext } = res.data;
+      const response = await getSubmissionsPage(problemId, cursorParam, PAGE_SIZE);
 
-        setSubmissionsList((prev) => (append ? [...prev, ...data] : data));
-
-        // Update cursor/hasNext from the payload so the client can request the following slice.
-        setCursor(nextCursor ?? null);
-
-        setHasNext(Boolean(nextHasNext));
-        setAuthError(false); // Reset auth error on successful fetch
-      } catch (error: any) {
+      if (!response.ok) {
         if (!append) {
           setSubmissionsList([]);
-          // Check if it's an authentication error
-          if (error.response?.status === 401) {
-            setAuthError(true);
-          }
+          setAuthError(response.status === 401);
         }
-      } finally {
+
         isFetchingRef.current = false;
         setIsFetching(false);
         setIsInitialLoading(false);
+        return;
       }
+
+      const { data, nextCursor, hasNext: nextHasNext } = response.data;
+
+      setSubmissionsList((prev) => (append ? [...prev, ...data] : data));
+      setCursor(nextCursor ?? null);
+      setHasNext(Boolean(nextHasNext));
+      setAuthError(false);
+
+      isFetchingRef.current = false;
+      setIsFetching(false);
+      setIsInitialLoading(false);
     },
-    [problemIDStore]
+    [problemId]
   );
 
   useEffect(() => {
-    if (tab !== "submissions") {
-      return;
-    }
-
-    // Reset pagination cache when we revisit the submissions tab or switch problems.
-    setSubmissionsList([]); 
+    setSubmissionsList([]);
     setCursor(null);
     setHasNext(true);
     setIsInitialLoading(true);
-    setAuthError(false); // Reset auth error when switching tabs/problems
+    setAuthError(false);
 
-    fetchSubmissions(null, false);
-  }, [tab, problemIDStore, fetchSubmissions]);
+    void fetchSubmissions(null, false);
+  }, [problemId, fetchSubmissions]);
 
   useEffect(() => {
     const container = containerRef.current;
     const sentinel = loadMoreRef.current;
 
-    if (tab !== "submissions" || !container || !sentinel) {
+    if (!container || !sentinel) {
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+
         if (entry?.isIntersecting && hasNext && !isFetchingRef.current) {
-          // When the sentinel enters view, pull the next page using the stored cursor.
-          fetchSubmissions(cursor, true);
+          void fetchSubmissions(cursor, true);
         }
       },
       {
@@ -116,24 +112,34 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
     return () => {
       observer.disconnect();
     };
-  }, [tab, cursor, hasNext, fetchSubmissions, submissionsList.length]);
+  }, [cursor, hasNext, fetchSubmissions]);
+
+  const setSubmissionCodeInEditor = (code: string) => {
+    if (!currentSlug) {
+      return;
+    }
+
+    setCodeForSlug(currentSlug, code);
+  };
+
+  const widthStyle = sidebarWidth ? { width: `${sidebarWidth}px` } : undefined;
 
   if (isInitialLoading) {
     return (
       <div
-        className={`${tab == "submissions" ? "" : "hidden"} h-screen overflow-y-auto p-6`}
-        style={{ width: `${sidebarWidth}px` }}
+        className={`h-full overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+        style={widthStyle}
       >
-        <div>
-          <Button
-            className="bg-none! hover:bg-red-100"
-            onClick={() => {
-              setTab("problem");
-            }}
-          >
-            <ArrowLeft />
-          </Button>
-          <span className="px-5 text-md font-bold text-white">Submissions</span>
+        <div className="mb-4 flex items-center">
+          {onBack ? (
+            <Button
+              className="h-7 border border-white/10 bg-transparent px-2 hover:bg-white/10"
+              onClick={onBack}
+            >
+              <ArrowLeft />
+            </Button>
+          ) : null}
+          <span className="px-3 text-sm font-semibold text-white">Submissions</span>
         </div>
         <div className="flex items-center justify-center">
           <Loader2 className="animate-spin" />
@@ -145,31 +151,29 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
   return (
     <div
       ref={containerRef}
-      className={`${tab == "submissions" ? "" : "hidden"} h-screen overflow-y-auto p-6`}
-      style={{ width: `${sidebarWidth}px` }}
+      className={`h-full overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+      style={widthStyle}
     >
-      <div>
-        <Button
-          className="hover:scale-95 transition-all duration-200 hover:bg-white/20"
-          onClick={() => {
-            setTab("problem");
-          }}
-        >
-          <ArrowLeft />
-        </Button>
-        <span className="px-5 text-md font-bold text-white">
-          Submissions
-        </span>
+      <div className="mb-4 flex items-center">
+        {onBack ? (
+          <Button
+            className="h-7 border border-white/10 bg-transparent px-2 transition-all duration-150 hover:bg-white/10"
+            onClick={onBack}
+          >
+            <ArrowLeft />
+          </Button>
+        ) : null}
+        <span className="px-3 text-sm font-semibold text-white">Submissions</span>
       </div>
-      <div className="my-5">
-        <div className="max-w-3xl mx-auto">
+      <div>
+        <div className="mx-auto max-w-3xl">
           {submissionsList.length > 0 ? (
             <div>
-              {submissionsList.map((submission, index) => (
-                <div key={index} className="my-4">
+              {submissionsList.map((submission) => (
+                <div key={submission.id} className="my-4">
                   <SubmissionCard
                     submission={submission}
-                    setCodeInEditor={setCodeForSlug}
+                    setCodeInEditor={setSubmissionCodeInEditor}
                     onViewSubmission={(item) => {
                       setSelectedSubmission(item);
                     }}
@@ -179,22 +183,21 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
             </div>
           ) : (
             <div className="text-center font-thin text-white/80">
-              {authError ? "Please log in first" : "No Earlier Submissions"}{" "}
+              {authError ? "Please log in first" : "No Earlier Submissions"}
             </div>
           )}
-          {/* Invisible sentinel that the intersection observer watches to trigger pagination. */}
           <div ref={loadMoreRef} className="h-1" />
-          {isFetching && submissionsList.length > 0 && (
-            <div className="flex items-center justify-center py-4 text-white/70 text-sm">
+          {isFetching && submissionsList.length > 0 ? (
+            <div className="flex items-center justify-center py-4 text-sm text-white/70">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading more submissions...
             </div>
-          )}
-          {!hasNext && submissionsList.length > 0 && (
-            <div className="py-4 text-center text-xs text-white/50">
-              You've reached the end
+          ) : null}
+          {!hasNext && submissionsList.length > 0 ? (
+            <div className="py-3 text-center text-xs text-white/50">
+              You&apos;ve reached the end
             </div>
-          )}
+          ) : null}
         </div>
       </div>
       <SubmissionDetailsModal
@@ -206,7 +209,5 @@ const SubmissionTab = ({ sidebarWidth }: { sidebarWidth: number }) => {
     </div>
   );
 };
-
-
 
 export default SubmissionTab;
