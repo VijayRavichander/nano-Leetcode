@@ -25,15 +25,16 @@ const LeaderBoardTab = ({
         {onBack ? (
           <Button
             onClick={onBack}
-            className="h-7 border border-white/10 bg-transparent px-2 hover:bg-white/10"
+            className="app-text-action app-text-action-muted h-auto px-0 py-0 shadow-none"
           >
             <ArrowLeft />
+            Back
           </Button>
         ) : null}
-        <span className="px-3 text-sm font-semibold text-white">Leaderboard</span>
+        <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Leaderboard</span>
       </div>
 
-      <div className="flex h-[16rem] items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/20 text-sm text-zinc-400">
+      <div className="app-empty-state h-[16rem]">
         <Trophy className="mr-2 h-4 w-4" />
         Leaderboard will be available here.
       </div>

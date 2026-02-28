@@ -11,31 +11,31 @@ export const STATUS_STYLES: Record<
 > = {
   ACCEPTED: {
     label: "Accepted",
-    textClass: "text-emerald-300",
+    textClass: "text-[var(--app-success-text)]",
   },
   REJECTED: {
     label: "Rejected",
-    textClass: "text-rose-300",
+    textClass: "text-[var(--app-danger-text)]",
   },
   PENDING: {
     label: "In Progress",
-    textClass: "text-amber-200",
+    textClass: "text-[var(--app-warning-text)]",
   },
   TLE: {
     label: "Time Limit Exceeded",
-    textClass: "text-orange-300",
+    textClass: "text-[var(--app-warning-text)]",
   },
   COMPILATIONERROR: {
     label: "Compilation Error",
-    textClass: "text-purple-300",
+    textClass: "text-[var(--app-danger-text)]",
   },
   RUNTIMEERROR: {
     label: "Runtime Error",
-    textClass: "text-red-300",
+    textClass: "text-[var(--app-danger-text)]",
   },
   INTERNALERROR: {
     label: "Internal Error",
-    textClass: "text-zinc-200",
+    textClass: "text-[var(--app-muted)]",
   },
 };
 
@@ -73,7 +73,7 @@ const SubmissionCard = ({
   const localDateString = utcDate.toLocaleString();
 
   return (
-    <div className="rounded-xl bg-zinc-900/50 p-2 transition-colors hover:bg-zinc-800/50">
+    <div className="app-panel p-4 transition-colors hover:bg-[var(--app-surface)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
@@ -82,11 +82,11 @@ const SubmissionCard = ({
             <span className="h-2 w-2 rounded-full font-bold" />
             {statusStyle.label}
           </span>
-          <span className="text-xs text-zinc-400">{localDateString}</span>
+          <span className="text-xs text-[var(--app-muted)]">{localDateString}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="h-3 w-3 text-blue-400" />
-          <span className="text-xs">
+          <Clock className="h-3 w-3 text-[var(--app-accent)]" />
+          <span className="text-xs text-[var(--app-text)]/82">
             {submission.max_cpu_time != null && submission.max_cpu_time !== -1
               ? `${submission.max_cpu_time * 1000} ms`
               : "NA"}
@@ -95,13 +95,13 @@ const SubmissionCard = ({
       </div>
       <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart2 className="h-3 w-3 text-blue-400" />
-          <Lock className="h-3 w-3 text-zinc-600" />
-          <span className="text-xs text-zinc-400">percentile</span>
+          <BarChart2 className="h-3 w-3 text-[var(--app-accent)]" />
+          <Lock className="h-3 w-3 text-[var(--app-muted)]" />
+          <span className="text-xs text-[var(--app-muted)]">percentile</span>
         </div>
-        <div className="flex items-center gap-1 text-blue-400 transition-colors">
+        <div className="flex items-center gap-1 text-[var(--app-accent)] transition-colors">
           <Button
-            className="text-xs hover:text-blue-300"
+            className="h-auto bg-transparent px-0 py-0 text-xs text-[var(--app-accent)] shadow-none hover:bg-transparent hover:text-[var(--app-text)]"
             onClick={() => {
               setCodeInEditor(submission.code);
               onViewSubmission?.(submission);

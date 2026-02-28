@@ -15,7 +15,7 @@ const ProblemPage = () => {
   const { problem, isLoading } = useProblemData(problemSlug);
 
   if (isLoading || !problem) {
-    return <Loader colorClass="text-violet-400" />;
+    return <Loader />;
   }
 
   return (

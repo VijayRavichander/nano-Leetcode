@@ -133,16 +133,17 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
         <div className="mb-4 flex items-center">
           {onBack ? (
             <Button
-              className="h-7 border border-white/10 bg-transparent px-2 hover:bg-white/10"
+              className="app-text-action app-text-action-muted h-auto px-0 py-0 shadow-none"
               onClick={onBack}
             >
               <ArrowLeft />
+              Back
             </Button>
           ) : null}
-          <span className="px-3 text-sm font-semibold text-white">Submissions</span>
+          <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Submissions</span>
         </div>
         <div className="flex items-center justify-center">
-          <Loader2 className="animate-spin" />
+          <Loader2 className="animate-spin text-[var(--app-accent)]" />
         </div>
       </div>
     );
@@ -157,13 +158,14 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
       <div className="mb-4 flex items-center">
         {onBack ? (
           <Button
-            className="h-7 border border-white/10 bg-transparent px-2 transition-all duration-150 hover:bg-white/10"
+            className="app-text-action app-text-action-muted h-auto px-0 py-0 shadow-none"
             onClick={onBack}
           >
             <ArrowLeft />
+            Back
           </Button>
         ) : null}
-        <span className="px-3 text-sm font-semibold text-white">Submissions</span>
+        <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Submissions</span>
       </div>
       <div>
         <div className="mx-auto max-w-3xl">
@@ -182,19 +184,19 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
               ))}
             </div>
           ) : (
-            <div className="text-center font-thin text-white/80">
+            <div className="text-center font-normal text-[var(--app-muted)]">
               {authError ? "Please log in first" : "No Earlier Submissions"}
             </div>
           )}
           <div ref={loadMoreRef} className="h-1" />
           {isFetching && submissionsList.length > 0 ? (
-            <div className="flex items-center justify-center py-4 text-sm text-white/70">
+            <div className="flex items-center justify-center py-4 text-sm text-[var(--app-muted)]">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading more submissions...
             </div>
           ) : null}
           {!hasNext && submissionsList.length > 0 ? (
-            <div className="py-3 text-center text-xs text-white/50">
+            <div className="py-3 text-center text-xs text-[var(--app-muted)]">
               You&apos;ve reached the end
             </div>
           ) : null}

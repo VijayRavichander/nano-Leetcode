@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PlusIcon, Trash2Icon, XIcon, Sparkles, Loader2 } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import { useTheme } from "next-themes";
+import { registerLiteCodeMonacoThemes } from "@/lib/monaco-theme";
 
 type CodeAndLanguage = {
   language: string;
@@ -79,6 +81,7 @@ export default function AddProblemPage() {
   const [examples, setExamples] = useState("");
   const [problemHint, setProblemHint] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   const slugFromTitle = useMemo(() => {
     if (!form.title.trim()) return "";
@@ -176,7 +179,7 @@ export default function AddProblemPage() {
           description: data.error || "An unknown error occurred",
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate problem", {
         description: "Network error or server unavailable",
       });
@@ -213,28 +216,40 @@ export default function AddProblemPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
-      <Toaster position="top-right" richColors closeButton />
+    <div className="app-theme app-page">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+        <Toaster position="top-right" richColors closeButton />
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Add Problem</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setForm(defaultForm)}>
-            Reset
-          </Button>
-          <Button onClick={handleSubmit}>Save</Button>
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <p className="app-section-label">Admin</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-[var(--app-text)]">
+              Add problem
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
+              Create prompts, examples, test cases, and reference solutions in the same minimal
+              system used across the rest of LiteCode.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className={outlineButtonClass} onClick={() => setForm(defaultForm)}>
+              Reset
+            </Button>
+            <Button className={primaryButtonClass} onClick={handleSubmit}>
+              Save
+            </Button>
+          </div>
         </div>
-      </div>
 
       {/* AI Generation Section */}
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="size-5 text-purple-500" />
+            <Sparkles className="size-5 text-[var(--app-accent)]" />
             Generate with AI
           </CardTitle>
           <CardDescription>
-            Use OpenAI to automatically generate all form fields based on example problems
+            Use example problems as context and let the model draft the full form.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
@@ -263,11 +278,11 @@ export default function AddProblemPage() {
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button 
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
               onClick={handleGenerateWithAI}
               disabled={isGenerating || !examples.trim()}
-              className="flex items-center gap-2"
+              className={primaryButtonClass}
             >
               {isGenerating ? (
                 <>
@@ -282,16 +297,16 @@ export default function AddProblemPage() {
               )}
             </Button>
             {isGenerating && (
-              <div className="flex items-center text-sm text-muted-foreground">
-                This may take 10-30 seconds...
+              <div className="flex items-center text-sm text-[var(--app-muted)]">
+                This may take 10 to 30 seconds.
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Basics</CardTitle>
           <CardDescription>Title, slug, difficulty, type, and tags</CardDescription>
         </CardHeader>
@@ -321,10 +336,10 @@ export default function AddProblemPage() {
                 value={form.difficulty}
                 onValueChange={(v: any) => handleBasicChange("difficulty", v)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClass}>
                   <SelectItem value="Easy">Easy</SelectItem>
                   <SelectItem value="Medium">Medium</SelectItem>
                   <SelectItem value="Hard">Hard</SelectItem>
@@ -337,10 +352,10 @@ export default function AddProblemPage() {
                 value={form.type}
                 onValueChange={(v: any) => handleBasicChange("type", v)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClass}>
                   <SelectItem value="None">None</SelectItem>
                   <SelectItem value="Contest">Contest</SelectItem>
                   <SelectItem value="Non_Contest">Non_Contest</SelectItem>
@@ -364,7 +379,7 @@ export default function AddProblemPage() {
                 placeholder="array, hash-map, two-pointers"
                 className={inputClass}
               />
-              <Button type="button" onClick={addTag} className="shrink-0">
+              <Button type="button" onClick={addTag} className={primaryButtonClass}>
                 <PlusIcon className="size-4" />
                 Add
               </Button>
@@ -375,7 +390,7 @@ export default function AddProblemPage() {
                   <button
                     key={t}
                     type="button"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs"
+                    className="app-chip cursor-pointer rounded-full transition-colors hover:border-[var(--app-muted)] hover:bg-[var(--app-panel)] hover:text-[var(--app-text)]"
                     onClick={() => removeTag(t)}
                     title="Remove tag"
                   >
@@ -389,8 +404,8 @@ export default function AddProblemPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Description & Constraints</CardTitle>
           <CardDescription>Write a clear problem statement and its constraints</CardDescription>
         </CardHeader>
@@ -413,6 +428,7 @@ export default function AddProblemPage() {
                 type="button"
                 variant="outline"
                 size="sm"
+                className={outlineButtonClass}
                 onClick={() => addArrayItem("constraints", "")}
               >
                 <PlusIcon className="size-4" /> Add constraint
@@ -431,8 +447,8 @@ export default function AddProblemPage() {
                     type="button"
                     variant="outline"
                     size="icon"
+                    className={outlineIconButtonClass}
                     onClick={() => removeArrayItem("constraints", i)}
-                    className="shrink-0"
                     aria-label="Remove constraint"
                   >
                     <Trash2Icon className="size-4" />
@@ -444,14 +460,17 @@ export default function AddProblemPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Examples</CardTitle>
           <CardDescription>Sample test cases for the problem description</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
           {form.testCases.map((tc, i) => (
-            <div key={i} className="rounded-lg border p-4 space-y-3">
+            <div
+              key={i}
+              className="rounded-lg border border-[var(--app-border)] bg-[var(--app-panel-muted)] p-4 space-y-3"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Input</label>
@@ -489,6 +508,7 @@ export default function AddProblemPage() {
                   type="button"
                   variant="outline"
                   size="sm"
+                  className={outlineButtonClass}
                   onClick={() => removeArrayItem("testCases", i)}
                 >
                   <Trash2Icon className="size-4" /> Remove example
@@ -499,6 +519,7 @@ export default function AddProblemPage() {
           <Button
             type="button"
             variant="outline"
+            className={outlineButtonClass}
             onClick={() => addArrayItem("testCases", { input: "", output: "", explanation: "" })}
           >
             <PlusIcon className="size-4" /> Add example
@@ -506,14 +527,14 @@ export default function AddProblemPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Test Cases</CardTitle>
           <CardDescription>Visible and hidden test cases used for evaluation</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <Tabs defaultValue="visible">
-            <TabsList>
+            <TabsList className="bg-[var(--app-panel-muted)]">
               <TabsTrigger value="visible">Visible</TabsTrigger>
               <TabsTrigger value="hidden">Hidden</TabsTrigger>
             </TabsList>
@@ -539,8 +560,8 @@ export default function AddProblemPage() {
                       type="button"
                       variant="outline"
                       size="icon"
+                      className={outlineIconButtonClass}
                       onClick={() => removeArrayItem("visibleTestCases", i)}
-                      className="shrink-0 self-start"
                       aria-label="Remove visible test case"
                     >
                       <Trash2Icon className="size-4" />
@@ -551,6 +572,7 @@ export default function AddProblemPage() {
               <Button
                 type="button"
                 variant="outline"
+                className={outlineButtonClass}
                 onClick={() => addArrayItem("visibleTestCases", { input: "", output: "" })}
               >
                 <PlusIcon className="size-4" /> Add visible test
@@ -578,8 +600,8 @@ export default function AddProblemPage() {
                       type="button"
                       variant="outline"
                       size="icon"
+                      className={outlineIconButtonClass}
                       onClick={() => removeArrayItem("hiddenTestCases", i)}
-                      className="shrink-0 self-start"
                       aria-label="Remove hidden test case"
                     >
                       <Trash2Icon className="size-4" />
@@ -590,6 +612,7 @@ export default function AddProblemPage() {
               <Button
                 type="button"
                 variant="outline"
+                className={outlineButtonClass}
                 onClick={() => addArrayItem("hiddenTestCases", { input: "", output: "" })}
               >
                 <PlusIcon className="size-4" /> Add hidden test
@@ -599,8 +622,8 @@ export default function AddProblemPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Boilerplate Code</CardTitle>
           <CardDescription>Language-specific starter code for the editor</CardDescription>
         </CardHeader>
@@ -614,10 +637,10 @@ export default function AddProblemPage() {
                     value={fc.language}
                     onValueChange={(v) => updateArrayItem<CodeAndLanguage[]>("functionCode", i, { language: v })}
                   >
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className={selectTriggerSmallClass}>
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className={selectContentClass}>
                       <SelectItem value="cpp">C++</SelectItem>
                       {/* Extend as you add languages */}
                     </SelectContent>
@@ -627,15 +650,17 @@ export default function AddProblemPage() {
                   type="button"
                   variant="outline"
                   size="sm"
+                  className={outlineButtonClass}
                   onClick={() => removeArrayItem("functionCode", i)}
                 >
                   <Trash2Icon className="size-4" /> Remove
                 </Button>
               </div>
-              <div className="border rounded-md overflow-hidden">
+              <div className="overflow-hidden rounded-md border border-[var(--app-border)]">
                 <Editor
                   height="220px"
-                  theme="vs-dark"
+                  beforeMount={registerLiteCodeMonacoThemes}
+                  theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
                   defaultLanguage={fc.language}
                   value={fc.code}
                   onChange={(val) => updateArrayItem<CodeAndLanguage[]>("functionCode", i, { code: val || "" })}
@@ -647,6 +672,7 @@ export default function AddProblemPage() {
           <Button
             type="button"
             variant="outline"
+            className={outlineButtonClass}
             onClick={() => addArrayItem("functionCode", { language: "cpp", code: "" })}
           >
             <PlusIcon className="size-4" /> Add language
@@ -654,8 +680,8 @@ export default function AddProblemPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="border-[var(--app-border)] bg-[var(--app-panel)] shadow-[var(--app-shadow)]">
+        <CardHeader className="border-b border-[var(--app-border)]">
           <CardTitle>Complete Code</CardTitle>
           <CardDescription>Reference solution(s) for internal use</CardDescription>
         </CardHeader>
@@ -669,10 +695,10 @@ export default function AddProblemPage() {
                     value={fc.language}
                     onValueChange={(v) => updateArrayItem<CodeAndLanguage[]>("completeCode", i, { language: v })}
                   >
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className={selectTriggerSmallClass}>
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className={selectContentClass}>
                       <SelectItem value="cpp">C++</SelectItem>
                     </SelectContent>
                   </Select>
@@ -681,15 +707,17 @@ export default function AddProblemPage() {
                   type="button"
                   variant="outline"
                   size="sm"
+                  className={outlineButtonClass}
                   onClick={() => removeArrayItem("completeCode", i)}
                 >
                   <Trash2Icon className="size-4" /> Remove
                 </Button>
               </div>
-              <div className="border rounded-md overflow-hidden">
+              <div className="overflow-hidden rounded-md border border-[var(--app-border)]">
                 <Editor
                   height="220px"
-                  theme="vs-dark"
+                  beforeMount={registerLiteCodeMonacoThemes}
+                  theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
                   defaultLanguage={fc.language}
                   value={fc.code}
                   onChange={(val) => updateArrayItem<CodeAndLanguage[]>("completeCode", i, { code: val || "" })}
@@ -701,25 +729,51 @@ export default function AddProblemPage() {
           <Button
             type="button"
             variant="outline"
+            className={outlineButtonClass}
             onClick={() => addArrayItem("completeCode", { language: "cpp", code: "" })}
           >
             <PlusIcon className="size-4" /> Add language
           </Button>
         </CardContent>
-        <CardFooter className="border-t mt-6 pt-6 flex justify-end">
-          <Button onClick={handleSubmit}>Save</Button>
+        <CardFooter className="mt-6 flex justify-end border-t border-[var(--app-border)] pt-6">
+          <Button className={primaryButtonClass} onClick={handleSubmit}>
+            Save
+          </Button>
         </CardFooter>
       </Card>
+      </div>
     </div>
   );
 }
 
 const inputClass = cn(
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50",
-  "w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+  "w-full rounded-md border border-[var(--app-border)] bg-[var(--app-panel)] px-3 py-2 text-sm text-[var(--app-text)] shadow-none outline-none placeholder:text-[var(--app-muted)] focus-visible:border-[var(--app-accent)] focus-visible:ring-[3px] focus-visible:ring-[color-mix(in_oklab,var(--app-accent)_30%,transparent)]"
 );
 
 const textareaClass = cn(
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50",
-  "w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px] min-h-24"
+  "min-h-24 w-full rounded-md border border-[var(--app-border)] bg-[var(--app-panel)] px-3 py-2 text-sm text-[var(--app-text)] shadow-none outline-none placeholder:text-[var(--app-muted)] focus-visible:border-[var(--app-accent)] focus-visible:ring-[3px] focus-visible:ring-[color-mix(in_oklab,var(--app-accent)_30%,transparent)]"
+);
+
+const selectTriggerClass = cn(
+  "w-full border-[var(--app-border)] bg-[var(--app-panel)] text-[var(--app-text)] shadow-none focus-visible:border-[var(--app-accent)] focus-visible:ring-[color-mix(in_oklab,var(--app-accent)_30%,transparent)]"
+);
+
+const selectTriggerSmallClass = cn(
+  "w-40 border-[var(--app-border)] bg-[var(--app-panel)] text-[var(--app-text)] shadow-none focus-visible:border-[var(--app-accent)] focus-visible:ring-[color-mix(in_oklab,var(--app-accent)_30%,transparent)]"
+);
+
+const selectContentClass = cn(
+  "border-[var(--app-border)] bg-[var(--app-panel)] text-[var(--app-text)] shadow-[var(--app-shadow)]"
+);
+
+const primaryButtonClass = cn(
+  "app-text-action cursor-pointer px-0 py-0 shadow-none"
+);
+
+const outlineButtonClass = cn(
+  "app-text-action app-text-action-muted cursor-pointer px-0 py-0 shadow-none"
+);
+
+const outlineIconButtonClass = cn(
+  "app-text-action app-text-action-muted shrink-0 cursor-pointer px-0 py-0 shadow-none"
 );

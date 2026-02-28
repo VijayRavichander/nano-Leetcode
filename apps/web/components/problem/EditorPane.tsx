@@ -12,6 +12,8 @@ import {
 import { useExecutionStore } from "@/lib/store/executionStore";
 import { resolveDefaultCode } from "@/lib/problem/session";
 import type { ProblemDetail } from "@/lib/types/problem";
+import { useTheme } from "next-themes";
+import { registerLiteCodeMonacoThemes } from "@/lib/monaco-theme";
 
 interface EditorPaneProps {
   problem: ProblemDetail;
@@ -21,6 +23,7 @@ const EditorPane = ({ problem }: EditorPaneProps) => {
   const currentCode = useCurrentCode();
   const currentSlug = useCurrentSlug();
   const language = useLangStore((state) => state.lang);
+  const { resolvedTheme } = useTheme();
 
   const setCodeForSlug = useCodeStore((state) => state.setCodeForSlug);
   const resetCodeForSlug = useCodeStore((state) => state.resetCodeForSlug);
@@ -39,14 +42,14 @@ const EditorPane = ({ problem }: EditorPaneProps) => {
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="flex h-10 items-center justify-between border-b border-white/10 px-3.5">
-        <h2 className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+      <header className="flex h-11 items-center justify-between border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3.5">
+        <h2 className="text-sm font-medium text-[var(--app-muted)]">
           Editor
         </h2>
         <Button
           type="button"
           onClick={handleReset}
-          className="h-7 rounded-md border border-white/10 bg-transparent px-2.5 text-[11px] font-medium text-zinc-300 hover:bg-white/10"
+          className="app-text-action app-text-action-muted h-auto px-0 py-0 text-[11px] shadow-none"
         >
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
           Reset
@@ -57,7 +60,8 @@ const EditorPane = ({ problem }: EditorPaneProps) => {
         <Editor
           height="100%"
           defaultLanguage={language}
-          theme="vs-dark"
+          beforeMount={registerLiteCodeMonacoThemes}
+          theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
           value={currentCode}
           onChange={(value) => {
             if (!currentSlug || value === undefined) {

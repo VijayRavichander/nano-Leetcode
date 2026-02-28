@@ -60,11 +60,11 @@ const PaneResizeHandle = ({
       <span
         className={
           isVertical
-            ? `absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors duration-150 ease-out motion-reduce:transition-none group-hover:bg-white/40 group-focus-visible:bg-white/50 ${
-                isActive ? "bg-white/65" : "bg-white/12"
+            ? `absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors duration-150 ease-out motion-reduce:transition-none group-hover:bg-[var(--app-muted)] group-focus-visible:bg-[var(--app-muted)] ${
+                isActive ? "bg-[var(--app-text)]" : "bg-[var(--app-border)]"
               }`
-            : `absolute inset-x-0 top-1/2 h-px -translate-y-1/2 transition-colors duration-150 ease-out motion-reduce:transition-none group-hover:bg-white/40 group-focus-visible:bg-white/50 ${
-                isActive ? "bg-white/65" : "bg-white/12"
+            : `absolute inset-x-0 top-1/2 h-px -translate-y-1/2 transition-colors duration-150 ease-out motion-reduce:transition-none group-hover:bg-[var(--app-muted)] group-focus-visible:bg-[var(--app-muted)] ${
+                isActive ? "bg-[var(--app-text)]" : "bg-[var(--app-border)]"
               }`
         }
       />

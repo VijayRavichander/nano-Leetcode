@@ -100,7 +100,7 @@ const WorkspaceSplitLayout = ({
         ref={containerRef}
       >
         <div
-          className="min-w-0 overflow-hidden border-r border-white/10"
+          className="min-w-0 overflow-hidden border-r border-[var(--app-border)] bg-[var(--app-panel)]"
           style={desktopPaneStyle.left}
         >
           {questionPane}
@@ -119,7 +119,7 @@ const WorkspaceSplitLayout = ({
           isActive={dragAxis === "vertical"}
         />
 
-        <div ref={rightPaneRef} className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div ref={rightPaneRef} className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-panel)]">
           <div className="min-h-0 overflow-hidden" style={desktopPaneStyle.rightTop}>
             {editorPane}
           </div>
@@ -137,21 +137,21 @@ const WorkspaceSplitLayout = ({
             isActive={dragAxis === "horizontal"}
           />
 
-          <div className="min-h-0 flex-1 overflow-hidden border-t border-white/10">
+          <div className="min-h-0 flex-1 overflow-hidden border-t border-[var(--app-border)]">
             {resultPane}
           </div>
         </div>
       </div>
 
       <div className="flex h-full min-h-0 flex-col md:hidden">
-        <div className="flex gap-1.5 border-b border-white/10 px-3 py-2">
+        <div className="flex gap-3 border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3 py-1.5">
           <button
             type="button"
             onClick={() => setMobileSection("question")}
-            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium ${
+            className={`px-0 py-0 text-[10px] font-medium ${
               mobileSection === "question"
-                ? "border-white/60 bg-white text-black"
-                : "border-white/10 bg-transparent text-zinc-300"
+                ? "app-text-action text-[var(--app-text)] underline"
+                : "app-text-action app-text-action-muted"
             }`}
           >
             Question
@@ -159,10 +159,10 @@ const WorkspaceSplitLayout = ({
           <button
             type="button"
             onClick={() => setMobileSection("editor")}
-            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium ${
+            className={`px-0 py-0 text-[10px] font-medium ${
               mobileSection === "editor"
-                ? "border-white/60 bg-white text-black"
-                : "border-white/10 bg-transparent text-zinc-300"
+                ? "app-text-action text-[var(--app-text)] underline"
+                : "app-text-action app-text-action-muted"
             }`}
           >
             Editor
@@ -170,10 +170,10 @@ const WorkspaceSplitLayout = ({
           <button
             type="button"
             onClick={() => setMobileSection("results")}
-            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium ${
+            className={`px-0 py-0 text-[10px] font-medium ${
               mobileSection === "results"
-                ? "border-white/60 bg-white text-black"
-                : "border-white/10 bg-transparent text-zinc-300"
+                ? "app-text-action text-[var(--app-text)] underline"
+                : "app-text-action app-text-action-muted"
             }`}
           >
             Results

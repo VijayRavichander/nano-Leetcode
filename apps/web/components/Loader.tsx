@@ -1,12 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 const Loader = ({
-  colorClass = "text-violet-400",
+  colorClass = "text-[var(--app-accent)]",
 }: {
   colorClass?: string;
 }) => {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center ">
+    <div className="app-theme app-page flex min-h-screen flex-col items-center justify-center">
       <AnimatePresence>
         <div style={{ perspective: "150px" }}>
           <motion.div

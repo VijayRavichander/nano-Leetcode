@@ -37,22 +37,20 @@ const ProblemWorkspace = ({ problem }: ProblemWorkspaceProps) => {
   } = useWorkspaceLayout();
 
   return (
-    <section className="min-h-screen bg-[#0f1115] text-zinc-100">
-      <header className="flex items-center justify-between border-b border-white/10 px-3 py-2.5 md:px-4">
-        <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-          Problem Workspace
-        </div>
+    <section className="app-theme min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
+      <header className="app-toolbar flex items-center justify-between px-3 py-2 md:px-4">
+        <div className="text-[0.72rem] font-medium text-[var(--app-muted)]">Problem workspace</div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3">
           {MODES.map((mode) => (
             <Button
               key={mode}
               type="button"
               onClick={() => setTab(mode)}
-              className={`h-7 rounded-md border px-2.5 text-[11px] font-medium ${
+              className={`h-auto px-0 py-0 text-[10px] font-medium shadow-none ${
                 tab === mode
-                  ? "border-white/60 bg-white text-black hover:bg-white/90"
-                  : "border-white/10 bg-transparent text-zinc-300 hover:bg-white/10"
+                  ? "app-text-action text-[var(--app-text)] underline"
+                  : "app-text-action app-text-action-muted"
               }`}
             >
               {modeLabel[mode]}
@@ -61,7 +59,7 @@ const ProblemWorkspace = ({ problem }: ProblemWorkspaceProps) => {
           <Button
             type="button"
             onClick={resetLayout}
-            className="hidden h-7 rounded-md border border-white/10 bg-transparent px-2.5 text-[11px] font-medium text-zinc-300 hover:bg-white/10 md:inline-flex"
+            className="app-text-action app-text-action-muted hidden px-0 py-0 text-[10px] md:inline-flex"
           >
             Reset Layout
           </Button>

@@ -1,7 +1,6 @@
 "use client";
 
-import { Loader2, LockIcon, PlayIcon, RocketIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import { Loader2, LockIcon } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   Select,
@@ -20,10 +19,9 @@ import { useState } from "react";
 import { useProblemUIStore } from "@/lib/store/uiStore";
 import Link from "next/link";
 import NavbarActionDropDown from "./ActionDropDown";
-
-import { AnimatePresence, motion } from "framer-motion";
+import ThemeToggle from "./ThemeToggle";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { runCode, submitCode } from "@/lib/api/execution";
 import { getSubmissionStatus } from "@/lib/api/submission";
 import { useExecutionStore } from "@/lib/store/executionStore";
@@ -45,6 +43,10 @@ const NavBar = () => {
 
   const session = authClient.useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const isLanding = pathname === "/" && !showControls;
+  const isWorkspace = Boolean(showControls) || (pathname?.startsWith("/problem/") ?? false);
+  const isAppRoute = !isLanding && !isWorkspace;
 
   const handleSignIn = () => {
     router.push("/signin");
@@ -133,28 +135,107 @@ const NavBar = () => {
     setIsSubmitting(false);
   };
 
+  if (isLanding) {
+    return (
+      <header
+        className="border-b border-[var(--landing-border)] bg-[var(--landing-chrome-bg)]"
+        style={{ boxShadow: "var(--landing-chrome-shadow)" }}
+      >
+        <div className="landing-container">
+          <div className="flex items-center justify-between gap-4 py-5 md:py-6">
+            <Link href="/" className="group min-w-0">
+              <div className="min-w-0">
+                <div className="text-[1.35rem] font-medium tracking-[-0.03em] text-[var(--landing-text)]">
+                  LiteCode
+                </div>
+                <p className="hidden text-sm text-[var(--landing-muted)] md:block">
+                  Steady interview practice
+                </p>
+              </div>
+            </Link>
+
+            <div className="flex items-center gap-5 text-sm md:gap-6">
+              <Link
+                href="/problem"
+                className="landing-text-action landing-text-action-muted"
+              >
+                Problems
+              </Link>
+              <ThemeToggle variant="landing" />
+              {!session.data ? (
+                <button className="landing-text-action cursor-pointer" onClick={handleSignIn}>
+                  Sign in
+                </button>
+              ) : (
+                <NavbarActionDropDown session={session} variant="landing" />
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  if (isAppRoute) {
+    return (
+      <header
+        className="border-b border-[var(--app-border)] bg-[var(--app-chrome)] text-[var(--app-text)]"
+        style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.02) inset" }}
+      >
+        <div className="app-container">
+          <div className="flex items-center justify-between gap-4 py-4 md:py-5">
+            <Link href="/" className="min-w-0">
+              <div className="min-w-0">
+                <div className="text-[1.35rem] font-medium tracking-[-0.03em] text-[var(--app-text)]">
+                  LiteCode
+                </div>
+              </div>
+            </Link>
+
+            <div className="flex items-center gap-4 text-sm md:gap-5">
+              <Link
+                href="/problem"
+                className="app-text-action app-text-action-muted"
+              >
+                Problems
+              </Link>
+              <ThemeToggle variant="app" />
+              {!session.data ? (
+                <button className="app-text-action cursor-pointer" onClick={handleSignIn}>
+                  Sign in
+                </button>
+              ) : (
+                <NavbarActionDropDown session={session} variant="app" />
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <div
-      className={`flex justify-between bg-black p-2 px-4 text-white ${showControls ? "" : "border-b border-violet-400"}`}
+      className="flex items-center justify-between gap-3 border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-4 py-2 text-[var(--app-text)]"
     >
       <Link href={showControls ? "/problem" : "/"}>
-        <div className="text-center text-2xl font-bold lowercase tracking-tighter text-purple-400 md:text-3xl">
+        <div className="text-center text-2xl font-semibold tracking-[-0.03em] text-[var(--app-text)] md:text-[1.8rem]">
           LiteCode
         </div>
       </Link>
 
-      <div className={`${showControls ? "" : "hidden"}`}>
-        <div className="flex justify-between gap-2">
+      <div className={showControls ? "" : "hidden"}>
+        <div className="flex items-center justify-between gap-2.5 md:gap-3">
           <div>
             <Select
               onValueChange={(value) => setSelectedLanguage(value as SupportedLanguage)}
               defaultValue="cpp"
             >
-              <SelectTrigger className="w-full border-0 bg-neutral-900 text-white shadow-none focus:outline-none! focus:ring-0! md:w-[180px]">
+              <SelectTrigger className="h-auto w-full border-none bg-transparent px-0 py-0 text-[12px] font-medium text-[var(--app-muted)] underline-offset-4 shadow-none transition-colors hover:underline hover:text-[var(--app-text)] focus:outline-none! focus:ring-0! md:w-[72px]">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
-              <SelectContent className="bg-neutral-800 text-white/90!">
-                <SelectItem value="cpp">CPP</SelectItem>
+              <SelectContent className="border-[var(--app-border)] bg-[var(--app-panel)] text-[var(--app-text)]">
+                <SelectItem value="cpp">C++</SelectItem>
                 <SelectItem value="python" disabled>
                   <LockIcon className="h-4 w-4" /> Python
                 </SelectItem>
@@ -162,115 +243,50 @@ const NavBar = () => {
             </Select>
           </div>
           <div>
-            <Button
-              className="cursor-pointer font-normal text-blue-400 transition-all duration-200 hover:bg-blue-500/50 hover:text-blue-200 active:scale-95"
+            <button
+              className="app-text-action app-text-action-muted cursor-pointer text-[12px]"
               onClick={() => {
                 void runCodeInEditor();
               }}
             >
-              <AnimatePresence mode="wait">
-                {isRunning ? (
-                  <motion.div
-                    key="running"
-                    initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    transition={{
-                      duration: 0.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 className="animate-spin" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="run"
-                    initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    transition={{
-                      duration: 0.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    }}
-                    className="flex items-center gap-2 text-sm md:text-base"
-                  >
-                    <PlayIcon className="hidden fill-current md:block" />
-                    Run
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
+              {isRunning ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Running
+                </span>
+              ) : (
+                "Run"
+              )}
+            </button>
           </div>
           <div>
-            <Button
-              className="group cursor-pointer font-normal text-green-600 transition-all duration-200 hover:bg-emerald-500/50 hover:text-green-200 active:scale-95"
+            <button
+              className="app-text-action cursor-pointer text-[12px]"
               onClick={() => {
                 void submitCodeFromEditor();
               }}
             >
-              <AnimatePresence mode="wait">
-                {isSubmitting ? (
-                  <motion.div
-                    key="submitting"
-                    initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    transition={{
-                      duration: 0.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <div className="flex items-center gap-1">
-                      <div className="flex space-x-1">
-                        <div className="h-1 w-1 animate-bounce rounded-full bg-current [animation-delay:-0.3s]" />
-                        <div className="h-1 w-1 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
-                        <div className="h-1 w-1 animate-bounce rounded-full bg-current" />
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="submit"
-                    initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    transition={{
-                      duration: 0.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    }}
-                    className="flex items-center gap-2 text-sm md:text-base"
-                  >
-                    <RocketIcon className="hidden md:block" />
-                    Submit
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
+              {isSubmitting ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Submitting
+                </span>
+              ) : (
+                "Submit"
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <ThemeToggle variant="app" />
         {!session.data ? (
-          <Button
-            className="
-              cursor-pointer rounded-md bg-neutral-950
-              px-2 text-sm lowercase text-white/90 hover:bg-neutral-800 hover:text-white hover:underline
-              transition-all duration-300 active:scale-95
-              focus:outline-none
-            "
-            onClick={handleSignIn}
-          >
+          <button className="app-text-action cursor-pointer text-sm focus:outline-none" onClick={handleSignIn}>
             Sign in
-          </Button>
+          </button>
         ) : (
-          <NavbarActionDropDown session={session} />
+          <NavbarActionDropDown session={session} variant="app" />
         )}
       </div>
     </div>

@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { IBM_Plex_Serif, Inter } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Niconne } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
 
-const niconne = Niconne({
-  weight: "400",
+const landingBodyFont = Inter({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-niconne",
+  variable: "--font-landing-body",
 });
+
+const landingSerifFont = IBM_Plex_Serif({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-landing-serif",
+});
+
 export const metadata: Metadata = {
   title: "Litecode",
   description: "nano-Leetcode Platform",
@@ -20,10 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <html lang="en" className="suppressHydrationWarning">
-        <body className={``}>
-          <div className="relative flex flex-col">
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${landingBodyFont.variable} ${landingSerifFont.variable}`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <div className="relative flex min-h-screen flex-col">
             <div>
               <NavBar />
             </div>
@@ -32,8 +39,8 @@ export default function RootLayout({
               <Footer />
             </div>
           </div>
-        </body>
-      </html>
-    </>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

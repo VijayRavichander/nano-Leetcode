@@ -102,7 +102,7 @@ const SubmissionDetailsModal = ({
         <>
           <motion.div
             layout
-            className="fixed inset-0 z-40 bg-black"
+            className="fixed inset-0 z-40 bg-black/40"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
@@ -119,11 +119,11 @@ const SubmissionDetailsModal = ({
           >
             <motion.div
               layout
-              className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0f0f10] p-6 text-white shadow-2xl"
+              className="relative w-full max-w-lg rounded-2xl border border-[var(--app-border)] bg-[var(--app-panel)] p-6 text-[var(--app-text)] shadow-[var(--app-shadow-strong)]"
               ref={modalRef}
             >
               <button
-                className="absolute right-4 top-4 rounded-full bg-white/5 p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
+                className="app-text-action app-text-action-muted absolute right-4 top-4 cursor-pointer px-0 py-0 text-xs"
                 onClick={onClose}
                 aria-label="Close submission details"
               >
@@ -132,7 +132,7 @@ const SubmissionDetailsModal = ({
 
               <motion.div layout className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs uppercase tracking-wide text-white/40">
+                  <span className="text-xs tracking-wide text-[var(--app-muted)]">
                     Submission Status
                   </span>
                   {(() => {
@@ -144,25 +144,25 @@ const SubmissionDetailsModal = ({
                     );
                   })()}
                 </div>
-                <span className="mt-5 rounded-full bg-white/5 px-3 py-1 text-xs text-white/70">
+                <span className="mt-5 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-3 py-1 text-xs text-[var(--app-muted)]">
                   {new Date(submission.createdAt).toLocaleString()}
                 </span>
               </motion.div>
 
-              <motion.div layout className="grid gap-3 rounded-xl bg-white/5 p-4 text-sm text-white/80">
+              <motion.div layout className="grid gap-3 rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-muted)] p-4 text-sm text-[var(--app-text)]/82">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-300" />
-                  <span className="text-white/50">Runtime</span>
-                  <span className="font-medium text-white">
+                  <Clock className="h-4 w-4 text-[var(--app-accent)]" />
+                  <span className="text-[var(--app-muted)]">Runtime</span>
+                  <span className="font-medium text-[var(--app-text)]">
                     {submission.max_cpu_time != null && submission.max_cpu_time !== -1
                       ? `${submission.max_cpu_time * 1000} ms`
                       : "Not available"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Gauge className="h-4 w-4 text-emerald-300" />
-                  <span className="text-white/50">Memory</span>
-                  <span className="font-medium text-white">
+                  <Gauge className="h-4 w-4 text-[var(--app-success-text)]" />
+                  <span className="text-[var(--app-muted)]">Memory</span>
+                  <span className="font-medium text-[var(--app-text)]">
                     {submission.max_memory != null && submission.max_memory !== -1
                       ? `${submission.max_memory} KB`
                       : "Not available"}
@@ -171,7 +171,7 @@ const SubmissionDetailsModal = ({
               </motion.div>
 
               <motion.div layout className="mt-6">
-                <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-wide text-white/40">
+                <div className="mb-2 flex items-center justify-between text-xs tracking-wide text-[var(--app-muted)]">
                   <span>Submitted Code</span>
                   <span>
                     {submission.code.length ? `${submission.code.length} chars` : ""}
@@ -182,7 +182,7 @@ const SubmissionDetailsModal = ({
                     <button
                       type="button"
                       onClick={handleCopy}
-                      className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/70 transition hover:bg-white/20 hover:text-white"
+                      className="app-text-action app-text-action-muted absolute right-3 top-3 cursor-pointer px-0 py-0 text-[10px] font-semibold tracking-wider"
                       aria-label={copied ? "Code copied" : "Copy submission code"}
                     >
                       {copied ? (
@@ -200,7 +200,7 @@ const SubmissionDetailsModal = ({
                   ) : null}
                   <motion.pre
                     layout
-                    className="max-h-72 overflow-auto rounded-xl bg-black/60 p-4 pr-14 font-mono text-xs text-white/80"
+                    className="max-h-72 overflow-auto rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-muted)] p-4 pr-14 font-mono text-xs text-[var(--app-text)]/82"
                   >
                     {submission.code || "Code not available."}
                   </motion.pre>
