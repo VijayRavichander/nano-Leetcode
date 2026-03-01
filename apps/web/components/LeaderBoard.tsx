@@ -18,7 +18,7 @@ const LeaderBoardTab = ({
 
   return (
     <section
-      className={`flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+      className={`flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
       style={widthStyle}
     >
       <div className="mb-4 flex items-center">
@@ -34,9 +34,11 @@ const LeaderBoardTab = ({
         <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Leaderboard</span>
       </div>
 
-      <div className="app-empty-state h-[16rem]">
-        <Trophy className="mr-2 h-4 w-4" />
-        Leaderboard will be available here.
+      <div className="flex flex-1 items-center justify-center">
+        <div className="app-empty-state flex h-[16rem] w-full max-w-5xl items-center justify-center">
+          <Trophy className="mr-2 h-4 w-4" />
+          Leaderboard will be available here.
+        </div>
       </div>
     </section>
   );

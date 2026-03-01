@@ -127,7 +127,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
   if (isInitialLoading) {
     return (
       <div
-        className={`flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+        className={`flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
         style={widthStyle}
       >
         <div className="mb-4 flex items-center">
@@ -152,7 +152,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
   return (
     <div
       ref={containerRef}
-      className={`flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+      className={`flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
       style={widthStyle}
     >
       <div className="mb-4 flex items-center">
@@ -167,8 +167,8 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
         ) : null}
         <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Submissions</span>
       </div>
-      <div>
-        <div className="mx-auto max-w-3xl">
+      <div className="flex-1">
+        <div className="mx-auto w-full">
           {submissionsList.length > 0 ? (
             <div>
               {submissionsList.map((submission) => (
