@@ -13,7 +13,7 @@ export default async function App() {
     },
   });
 
-  const res: ProblemListItem[] = problems.map((problem) => ({
+  const res: ProblemListItem[] = problems.map((problem: { title: string; slug: string; difficulty: string | null; tags: string[] }) => ({
     ...problem,
     difficulty: problem.difficulty as ProblemListItem["difficulty"],
   }));
