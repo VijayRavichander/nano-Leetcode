@@ -46,6 +46,7 @@ type ProblemForm = {
   type: "None" | "Contest" | "Non_Contest";
   tags: string[];
   description: string;
+  editorial: string;
   constraints: string[];
   testCases: DescriptionTestCase[];
   visibleTestCases: SimpleTestCase[];
@@ -61,6 +62,7 @@ const defaultForm: ProblemForm = {
   type: "None",
   tags: [],
   description: "",
+  editorial: "",
   constraints: [""],
   testCases: [
     {
@@ -144,6 +146,7 @@ export default function AddProblemPage() {
     if (!form.title.trim()) errors.push("Title is required");
     if (!form.slug.trim()) errors.push("Slug is required");
     if (!form.description.trim()) errors.push("Description is required");
+    if (!form.editorial.trim()) errors.push("Editorial is required");
     const firstFn = form.functionCode?.[0];
     if (!firstFn || !firstFn.code || !firstFn.code.trim())
       errors.push("At least one boilerplate code snippet is required");
@@ -417,6 +420,17 @@ export default function AddProblemPage() {
               onChange={(e) => handleBasicChange("description", e.target.value)}
               rows={8}
               placeholder="Describe the problem, input/output format, and requirements."
+              className={textareaClass}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Editorial (Markdown)</label>
+            <textarea
+              value={form.editorial}
+              onChange={(e) => handleBasicChange("editorial", e.target.value)}
+              rows={12}
+              placeholder={"## Intuition\nExplain the key insight.\n\n## Approach\nDescribe the algorithm step by step.\n\n## Complexity\n- Time: O(...)\n- Space: O(...)"}
               className={textareaClass}
             />
           </div>

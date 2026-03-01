@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "../config";
+import { BACKEND_URL } from "@/app/config";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { useTokenStore } from "@/lib/store/uiStore";

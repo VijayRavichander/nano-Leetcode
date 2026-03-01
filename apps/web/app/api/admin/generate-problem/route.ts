@@ -15,6 +15,7 @@ const few_shot_examples = `
 "type": "None",
 "tags": ["Strings", "Sliding Window"],
 "description": "Given a string s, return the length of the longest substring without repeating characters.",
+"editorial": "## Intuition\nUse a sliding window and keep each character unique inside the window.\n\n## Approach\nExpand the right pointer, and whenever a duplicate appears, move the left pointer until the window is valid again.\n\n## Complexity\n- Time: O(n)\n- Space: O(min(n, alphabet))",
 "constraints": ["1 <= |s| <= 100000", "s consists of ASCII letters and digits only"],
 "testCases": [
 { "input": "abcabcbb", "output": "3", "explanation": "The answer is "abc"" },
@@ -45,6 +46,7 @@ const few_shot_examples = `
 "type": "None",
 "tags": ["Arrays", "Hash Map", "Prefix Sum"],
 "description": "Given an array of integers and an integer k, return the total number of continuous subarrays whose sum equals k.",
+"editorial": "## Intuition\nA prefix sum lets you count how many earlier positions create the target sum at the current index.\n\n## Approach\nTrack frequencies of seen prefix sums in a hash map. For each new prefix sum, add the count of prefixSum - k to the answer.\n\n## Complexity\n- Time: O(n)\n- Space: O(n)",
 "constraints": ["1 <= n <= 100000", "-1000000000 <= nums[i] <= 1000000000", "-100000000000000 <= k <= 100000000000000"],
 "testCases": [
 { "input": "5\n1 1 1 2 1\n3", "output": "3", "explanation": "Subarrays: [1,1,1], [1,2], [2,1]" },
@@ -75,6 +77,7 @@ const few_shot_examples = `
 "type": "None",
 "tags": ["Strings", "Sliding Window", "Hash Map"],
 "description": "Given two strings s and t, return the minimum window substring of s such that every character in t (including duplicates) is included in the window. If no such substring exists, return -1.",
+"editorial": "## Intuition\nGrow a window until it covers all required characters, then shrink it as much as possible.\n\n## Approach\nMaintain frequency counts for required characters and current window characters. Once the window is valid, try to contract from the left while preserving validity.\n\n## Complexity\n- Time: O(|s| + |t|)\n- Space: O(alphabet)",
 "constraints": ["1 <= |s|, |t| <= 100000", "s and t consist of lowercase English letters only"],
 "testCases": [
 { "input": "ADOBECODEBANC\nABC", "output": "BANC", "explanation": "" },
@@ -121,11 +124,12 @@ The problem should include:
 3. Appropriate difficulty level (Easy/Medium/Hard)
 4. Relevant tags (like "array", "hash-map", "two-pointers", etc.)
 5. A detailed problem description with input/output format
-6. Realistic constraints
-7. Example test cases with explanations
-8. Both visible and hidden test cases for evaluation
-9. Boilerplate code in C++ (function signature only)
-10. Complete solution code in C++
+6. A markdown editorial with sections for intuition, approach, and complexity
+7. Realistic constraints
+8. Example test cases with explanations
+9. Both visible and hidden test cases for evaluation
+10. Boilerplate code in C++ (function signature only)
+11. Complete solution code in C++
 
 Make the problem interesting, well-structured, and similar in style to the examples provided.`;
 
@@ -165,6 +169,7 @@ Generate a new, original leetcode problem following the same format and quality 
                 items: { type: "string" },
               },
               description: { type: "string" },
+              editorial: { type: "string" },
               constraints: {
                 type: "array",
                 items: { type: "string" },
@@ -233,6 +238,7 @@ Generate a new, original leetcode problem following the same format and quality 
               "type",
               "tags",
               "description",
+              "editorial",
               "constraints",
               "testCases",
               "visibleTestCases",

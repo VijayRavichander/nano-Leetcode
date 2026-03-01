@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import SubmissionTab from "@/components/submission/SubmissionTab";
 import LeaderBoardTab from "@/components/LeaderBoard";
@@ -8,12 +9,15 @@ import EditorPane from "@/components/problem/EditorPane";
 import ResultPane from "@/components/problem/ResultPane";
 import WorkspaceSplitLayout from "@/components/problem/WorkspaceSplitLayout";
 import { useWorkspaceLayout } from "@/lib/hooks/useWorkspaceLayout";
+import { initializeProblemSession } from "@/lib/problem/session";
+import { useCodeStore, useLangStore } from "@/lib/store/codeStore";
 import { useProblemUIStore } from "@/lib/store/uiStore";
 import type { ProblemDetail } from "@/lib/types/problem";
 import type { WorkspaceMode } from "@/lib/types/workspace";
 
 interface ProblemWorkspaceProps {
   problem: ProblemDetail;
+  problemSlug: string;
 }
 
 const MODES: WorkspaceMode[] = ["problem", "submissions", "leaderboard"];
@@ -24,9 +28,13 @@ const modeLabel: Record<WorkspaceMode, string> = {
   leaderboard: "Leaderboard",
 };
 
-const ProblemWorkspace = ({ problem }: ProblemWorkspaceProps) => {
+const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
   const tab = useProblemUIStore((state) => state.tab);
   const setTab = useProblemUIStore((state) => state.setTab);
+  const setProblemId = useProblemUIStore((state) => state.setProblemId);
+  const language = useLangStore((state) => state.lang);
+  const setCurrentSlug = useCodeStore((state) => state.setCurrentSlug);
+  const ensureCodeForSlug = useCodeStore((state) => state.ensureCodeForSlug);
 
   const {
     leftPaneRatio,
@@ -36,8 +44,30 @@ const ProblemWorkspace = ({ problem }: ProblemWorkspaceProps) => {
     resetLayout,
   } = useWorkspaceLayout();
 
+  useEffect(() => {
+    setTab("problem");
+  }, [problemSlug, setTab]);
+
+  useEffect(() => {
+    initializeProblemSession({
+      problem,
+      slug: problemSlug,
+      language,
+      setProblemId,
+      setCurrentSlug,
+      ensureCodeForSlug,
+    });
+  }, [
+    ensureCodeForSlug,
+    language,
+    problem,
+    problemSlug,
+    setCurrentSlug,
+    setProblemId,
+  ]);
+
   return (
-    <section className="app-theme min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
+    <section className="app-theme flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--app-panel)] text-[var(--app-text)]">
       <header className="app-toolbar flex items-center justify-between px-3 py-2 md:px-4">
         <div className="text-[0.72rem] font-medium text-[var(--app-muted)]">Problem workspace</div>
 
@@ -66,7 +96,7 @@ const ProblemWorkspace = ({ problem }: ProblemWorkspaceProps) => {
         </div>
       </header>
 
-      <div className="h-[calc(100dvh-10.5rem)] min-h-[34rem]">
+      <div className="flex h-full min-h-0 flex-1 bg-[var(--app-panel)]">
         {tab === "problem" ? (
           <WorkspaceSplitLayout
             layout={{ leftPaneRatio, topRightRatio }}

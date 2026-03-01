@@ -94,13 +94,13 @@ const WorkspaceSplitLayout = ({
   const desktopClassName = dragAxis ? "select-none" : "";
 
   return (
-    <div className="h-full min-h-0">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)]">
       <div
-        className={`hidden h-full min-h-0 md:flex ${desktopClassName}`}
+        className={`hidden h-full min-h-0 flex-1 md:flex ${desktopClassName}`}
         ref={containerRef}
       >
         <div
-          className="min-w-0 overflow-hidden border-r border-[var(--app-border)] bg-[var(--app-panel)]"
+          className="flex min-h-0 min-w-0 flex-col overflow-hidden border-r border-[var(--app-border)] bg-[var(--app-panel)]"
           style={desktopPaneStyle.left}
         >
           {questionPane}
@@ -120,7 +120,7 @@ const WorkspaceSplitLayout = ({
         />
 
         <div ref={rightPaneRef} className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-panel)]">
-          <div className="min-h-0 overflow-hidden" style={desktopPaneStyle.rightTop}>
+          <div className="flex min-h-0 flex-col overflow-hidden" style={desktopPaneStyle.rightTop}>
             {editorPane}
           </div>
 
@@ -143,7 +143,7 @@ const WorkspaceSplitLayout = ({
         </div>
       </div>
 
-      <div className="flex h-full min-h-0 flex-col md:hidden">
+      <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)] md:hidden">
         <div className="flex gap-3 border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3 py-1.5">
           <button
             type="button"
@@ -180,7 +180,7 @@ const WorkspaceSplitLayout = ({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden bg-[var(--app-panel)]">
           {mobileSection === "question" ? questionPane : null}
           {mobileSection === "editor" ? editorPane : null}
           {mobileSection === "results" ? resultPane : null}

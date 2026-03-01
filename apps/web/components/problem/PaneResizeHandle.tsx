@@ -53,8 +53,8 @@ const PaneResizeHandle = ({
       onKeyDown={handleKeyDown}
       className={
         isVertical
-          ? "group relative w-2 cursor-col-resize bg-transparent focus:outline-none"
-          : "group relative h-2 cursor-row-resize bg-transparent focus:outline-none"
+          ? "group relative h-full w-2 self-stretch cursor-col-resize bg-transparent focus:outline-none"
+          : "group relative h-2 w-full shrink-0 cursor-row-resize bg-transparent focus:outline-none"
       }
     >
       <span

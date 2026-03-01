@@ -22,6 +22,7 @@ export interface ProblemDetail {
   title: string;
   difficulty: Difficulty;
   description: string;
+  editorial: string;
   constraints: string[];
   testCases: DescriptionTestCase[];
   tags: string[];

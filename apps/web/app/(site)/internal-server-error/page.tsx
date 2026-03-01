@@ -1,6 +1,6 @@
-"use client"
-import { motion } from "framer-motion";
+"use client";
 
+import { motion } from "framer-motion";
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
         If the issue persists, refresh the page or return to the problems list.
       </p>
     </div>
-  );  
+  );
 }
 
 export default App;

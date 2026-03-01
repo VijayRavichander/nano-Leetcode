@@ -49,6 +49,7 @@ const normalizeAddProblemPayload = (body: any) => {
       title: asString(metaData.title),
       slug: asString(problemInfo.slug),
       description: asString(metaData.description),
+      editorial: asString(problemInfo.editorial ?? metaData.editorial),
       difficulty: asString(metaData.difficulty, "Easy"),
       type: asString(problemInfo.type, "None"),
       tags: asStringArray(metaData.tags),
@@ -66,6 +67,7 @@ const normalizeAddProblemPayload = (body: any) => {
     title: asString(body?.title),
     slug: asString(body?.slug),
     description: asString(body?.description),
+    editorial: asString(body?.editorial),
     difficulty: asString(body?.difficulty, "Easy"),
     type: asString(body?.type, "None"),
     tags: asStringArray(body?.tags),
@@ -131,8 +133,8 @@ export const getProblems = async (_req: Request, res: Response) => {
 export const addProblem = async (req: Request, res: Response) => {
   const payload = normalizeAddProblemPayload(req.body);
 
-  if (!payload.title || !payload.slug || !payload.description) {
-    throw new AppError("title, slug, and description are required", 400);
+  if (!payload.title || !payload.slug || !payload.description || !payload.editorial) {
+    throw new AppError("title, slug, description, and editorial are required", 400);
   }
 
   const existing = await db.problem.findUnique({ where: { slug: payload.slug } });
@@ -145,6 +147,7 @@ export const addProblem = async (req: Request, res: Response) => {
       title: payload.title,
       slug: payload.slug,
       description: payload.description,
+      editorial: payload.editorial,
       difficulty: payload.difficulty,
       type: payload.type,
       tags: payload.tags,

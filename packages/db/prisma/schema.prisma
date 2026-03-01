@@ -82,6 +82,7 @@ model Problem {
   difficulty  String
   constraints String[]
   description String
+  editorial   String   @default("")
   testCases   Json?
   slug        String   @unique
   type        String   @default("None") // Contest, Non_Contest

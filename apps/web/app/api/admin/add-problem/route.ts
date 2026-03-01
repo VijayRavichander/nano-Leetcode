@@ -8,10 +8,11 @@ export async function POST(req: Request) {
     const title = (body?.title ?? "").toString().trim();
     const slug = (body?.slug ?? "").toString().trim();
     const description = (body?.description ?? "").toString().trim();
+    const editorial = (body?.editorial ?? "").toString().trim();
 
-    if (!title || !slug || !description) {
+    if (!title || !slug || !description || !editorial) {
       return NextResponse.json(
-        { error: "title, slug, and description are required" },
+        { error: "title, slug, description, and editorial are required" },
         { status: 400 }
       );
     }
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
         title,
         slug,
         description,
+        editorial,
         difficulty,
         type,
         tags,

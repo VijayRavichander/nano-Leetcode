@@ -24,6 +24,7 @@ export const ProblemFormSchema = z.object({
   type: z.enum(["None", "Contest", "Non_Contest"]),
   tags: z.array(z.string()),
   description: z.string(),
+  editorial: z.string(),
   constraints: z.array(z.string()),
   testCases: z.array(DescriptionTestCaseSchema),
   visibleTestCases: z.array(SimpleTestCaseSchema),

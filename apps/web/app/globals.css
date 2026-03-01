@@ -533,3 +533,85 @@
 .shape-animation-reverse {
   animation: float-reverse 7s ease-in-out infinite;
 }
+
+.editorial-markdown {
+  display: grid;
+  gap: 1rem;
+}
+
+.editorial-markdown h2,
+.editorial-markdown h3,
+.editorial-markdown h4 {
+  color: var(--app-text);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.editorial-markdown h2 {
+  font-size: 0.95rem;
+}
+
+.editorial-markdown h3 {
+  font-size: 0.88rem;
+}
+
+.editorial-markdown p,
+.editorial-markdown ul,
+.editorial-markdown ol {
+  color: color-mix(in oklab, var(--app-text) 88%, transparent);
+}
+
+.editorial-markdown ul,
+.editorial-markdown ol {
+  padding-left: 1.1rem;
+}
+
+.editorial-markdown li + li {
+  margin-top: 0.3rem;
+}
+
+.editorial-markdown :not(pre) > code {
+  border: 1px solid var(--app-border);
+  border-radius: 0.4rem;
+  background: var(--app-panel-muted);
+  color: var(--app-text);
+  padding: 0.12rem 0.35rem;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.85em;
+}
+
+.editorial-markdown pre {
+  overflow-x: auto;
+  border: 1px solid var(--app-border);
+  border-radius: 0.8rem;
+  background: var(--app-panel-muted);
+  padding: 0.9rem 1rem;
+}
+
+.editorial-markdown pre code {
+  color: var(--app-text);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.editorial-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 0.8rem;
+}
+
+.editorial-markdown th,
+.editorial-markdown td {
+  border-bottom: 1px solid var(--app-border);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+}
+
+.editorial-markdown th {
+  background: var(--app-panel-muted);
+  color: var(--app-text);
+  font-weight: 600;
+}

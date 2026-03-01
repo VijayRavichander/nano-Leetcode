@@ -127,7 +127,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
   if (isInitialLoading) {
     return (
       <div
-        className={`h-full overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+        className={`flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
         style={widthStyle}
       >
         <div className="mb-4 flex items-center">
@@ -152,7 +152,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
   return (
     <div
       ref={containerRef}
-      className={`h-full overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
+      className={`flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-5 ${className ?? ""}`}
       style={widthStyle}
     >
       <div className="mb-4 flex items-center">

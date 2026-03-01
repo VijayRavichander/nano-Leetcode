@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Serif, Inter } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const landingBodyFont = Inter({
@@ -30,15 +28,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${landingBodyFont.variable} ${landingSerifFont.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="relative flex min-h-screen flex-col">
-            <div>
-              <NavBar />
-            </div>
-            <div className="flex-1">{children}</div>
-            <div>
-              <Footer />
-            </div>
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>

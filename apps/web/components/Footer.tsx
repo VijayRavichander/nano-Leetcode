@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 const Footer = () => {
   const pathname = usePathname();
   const isLanding = pathname === "/";
-  const isWorkspace = pathname.startsWith("/problem/");
 
   if (isLanding) {
     return (
@@ -35,10 +34,6 @@ const Footer = () => {
         </div>
       </footer>
     );
-  }
-
-  if (isWorkspace) {
-    return null;
   }
 
   return (
