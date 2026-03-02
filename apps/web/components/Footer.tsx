@@ -3,6 +3,7 @@
 import { Github } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ const Footer = () => {
           <div className="flex flex-col gap-3 text-sm text-[var(--landing-muted)] md:flex-row md:items-center md:justify-between">
             <p>LiteCode is a focused practice space for steadier interview prep.</p>
             <div className="flex items-center gap-4">
+              <FeedbackButton />
               <Link className="hover:text-[var(--landing-link)]" href="/problem">
                 Problems
               </Link>
