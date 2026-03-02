@@ -1,35 +1,78 @@
 "use client";
 
-import { useState, useRef, useCallback, RefObject } from "react";
+import { useState, useRef, useCallback, useEffect, RefObject } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnClickOutside } from "usehooks-ts";
+
+const FEEDBACK_MAX_LENGTH = 2000;
 
 export function FeedbackButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<number | null>(null);
 
   useOnClickOutside(ref as RefObject<HTMLElement>, () => setIsOpen(false));
+
+  const clearCloseTimeout = useCallback(() => {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimeout();
+    };
+  }, [clearCloseTimeout]);
 
   const handleSubmit = useCallback(async () => {
     if (!feedback.trim() || isSubmitting) return;
 
+    clearCloseTimeout();
     setIsSubmitting(true);
+    setError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: feedback.trim(),
+          pageUrl: window.location.href,
+          website,
+        }),
+      });
 
-    setIsSubmitting(false);
-    setSubmitted(true);
-    setFeedback("");
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
 
-    setTimeout(() => {
-      setSubmitted(false);
-      setIsOpen(false);
-    }, 2000);
-  }, [feedback, isSubmitting]);
+      if (!response.ok) {
+        setError(payload?.error || "Failed to send feedback.");
+        return;
+      }
+
+      setSubmitted(true);
+      setFeedback("");
+      setWebsite("");
+
+      closeTimeoutRef.current = window.setTimeout(() => {
+        setSubmitted(false);
+        setIsOpen(false);
+      }, 2000);
+    } catch (submitError) {
+      console.error("Failed to submit feedback", submitError);
+      setError("Failed to send feedback.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [clearCloseTimeout, feedback, isSubmitting, website]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -45,7 +88,18 @@ export function FeedbackButton() {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          clearCloseTimeout();
+          setIsOpen((open) => {
+            const nextOpen = !open;
+
+            if (nextOpen) {
+              setError("");
+            }
+
+            return nextOpen;
+          });
+        }}
         className="text-sm text-[var(--landing-muted)] transition-colors hover:text-[var(--landing-link)]"
       >
         Feedback
@@ -96,12 +150,35 @@ export function FeedbackButton() {
 
                 <textarea
                   value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
+                  onChange={(e) => {
+                    setFeedback(e.target.value);
+                    if (error) {
+                      setError("");
+                    }
+                  }}
                   placeholder="Tell us what you think..."
                   className="w-full resize-none rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 text-sm text-[var(--landing-text)] placeholder:text-[var(--landing-muted)] focus:border-[var(--landing-accent-blue-strong)] focus:outline-none focus:ring-1 focus:ring-[var(--landing-accent-blue-strong)]"
                   rows={3}
+                  maxLength={FEEDBACK_MAX_LENGTH}
                   autoFocus
                 />
+
+                <div className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden opacity-0 pointer-events-none">
+                  <input
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    autoComplete="off"
+                    name="website"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
+
+                {error ? (
+                  <p className="mt-3 text-xs text-red-500" role="alert">
+                    {error}
+                  </p>
+                ) : null}
 
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-xs text-[var(--landing-muted)]">
