@@ -94,7 +94,7 @@ export default function AddProblemPage() {
       .replace(/\s+/g, "-");
   }, [form.title]);
 
-  const handleBasicChange = (key: keyof ProblemForm, value: any) => {
+  const handleBasicChange = (key: keyof ProblemForm, value: string | string[] | DescriptionTestCase[] | SimpleTestCase[] | CodeAndLanguage[]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -113,24 +113,24 @@ export default function AddProblemPage() {
     setForm((prev) => ({ ...prev, tags: prev.tags.filter((x) => x !== t) }));
   };
 
-  const updateArrayItem = <T extends any[]>(
+  const updateArrayItem = <T extends unknown[]>(
     key: keyof ProblemForm,
     index: number,
-    value: any
+    value: string | DescriptionTestCase | SimpleTestCase | CodeAndLanguage
   ) => {
     setForm((prev) => {
       const list = [...(prev[key] as T)];
-      const current = list[index] as any;
+      const current = list[index];
       const next = typeof current === "object" && current !== null && typeof value === "object" && value !== null
-        ? { ...current, ...(value as any) }
-        : (value as any);
+        ? { ...current, ...(value as object) }
+        : value;
       list[index] = next as T[number];
       return { ...prev, [key]: list } as ProblemForm;
     });
   };
 
-  const addArrayItem = (key: keyof ProblemForm, emptyItem: any) => {
-    setForm((prev) => ({ ...prev, [key]: [ ...(prev[key] as any[]), emptyItem ] }));
+  const addArrayItem = (key: keyof ProblemForm, emptyItem: string | DescriptionTestCase | SimpleTestCase | CodeAndLanguage) => {
+    setForm((prev) => ({ ...prev, [key]: [ ...(prev[key] as unknown[]), emptyItem ] }));
   };
 
   const removeArrayItem = (key: keyof ProblemForm, index: number) => {
@@ -337,7 +337,7 @@ export default function AddProblemPage() {
               <label className="text-sm font-medium">Difficulty</label>
               <Select
                 value={form.difficulty}
-                onValueChange={(v: any) => handleBasicChange("difficulty", v)}
+                onValueChange={(v) => handleBasicChange("difficulty", v)}
               >
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select difficulty" />
@@ -353,7 +353,7 @@ export default function AddProblemPage() {
               <label className="text-sm font-medium">Type</label>
               <Select
                 value={form.type}
-                onValueChange={(v: any) => handleBasicChange("type", v)}
+                onValueChange={(v) => handleBasicChange("type", v)}
               >
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select type" />
@@ -453,7 +453,7 @@ export default function AddProblemPage() {
                 <div key={i} className="flex gap-2">
                   <input
                     value={c}
-                    onChange={(e) => updateArrayItem<any[]>("constraints", i, e.target.value)}
+                    onChange={(e) => updateArrayItem<string[]>("constraints", i, e.target.value)}
                     placeholder="1 <= n <= 1e5"
                     className={inputClass}
                   />

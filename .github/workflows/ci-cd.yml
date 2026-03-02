@@ -55,13 +55,11 @@ jobs:
           script: |
             set -euo pipefail
 
-            cd /var/www/nano-leetcode
+            cd projects/nano-Leetcode
             git pull --ff-only origin prod
             bun install --frozen-lockfile
             bun run build
 
-            if pm2 describe nano-leetcode-web > /dev/null 2>&1; then
-              pm2 restart nano-leetcode-web
-            else
-              pm2 start "bun run --cwd apps/web start" --name nano-leetcode-web
-            fi
+            pm2 describe litecode-web > /dev/null 2>&1
+            pm2 restart litecode-web
+

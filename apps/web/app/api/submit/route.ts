@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       }
     );
   
-    const judgeZeroTokens = judgeZeroRes.data.map((submission: any) => submission.token);
+    const judgeZeroTokens = judgeZeroRes.data.map((submission: { token: string }) => submission.token);
   
   
     const submissionId = await db.submission.create({

@@ -30,43 +30,58 @@ export async function POST(req: Request) {
 
     const testCases: { input: string; output: string; explanation: string }[] =
       Array.isArray(body?.testCases)
-        ? body.testCases.map((tc: any) => ({
-            input: (tc?.input ?? "").toString(),
-            output: (tc?.output ?? "").toString(),
-            explanation: (tc?.explanation ?? "").toString(),
-          }))
+        ? body.testCases.map((tc: unknown) => {
+            const t = tc as Record<string, unknown> | undefined;
+            return {
+              input: (t?.input ?? "").toString(),
+              output: (t?.output ?? "").toString(),
+              explanation: (t?.explanation ?? "").toString(),
+            };
+          })
         : [];
 
     const visibleTestCases: { input: string; output: string }[] =
       Array.isArray(body?.visibleTestCases)
-        ? body.visibleTestCases.map((tc: any) => ({
-            input: (tc?.input ?? "").toString(),
-            output: (tc?.output ?? "").toString(),
-          }))
+        ? body.visibleTestCases.map((tc: unknown) => {
+            const t = tc as Record<string, unknown> | undefined;
+            return {
+              input: (t?.input ?? "").toString(),
+              output: (t?.output ?? "").toString(),
+            };
+          })
         : [];
 
     const hiddenTestCases: { input: string; output: string }[] =
       Array.isArray(body?.hiddenTestCases)
-        ? body.hiddenTestCases.map((tc: any) => ({
-            input: (tc?.input ?? "").toString(),
-            output: (tc?.output ?? "").toString(),
-          }))
+        ? body.hiddenTestCases.map((tc: unknown) => {
+            const t = tc as Record<string, unknown> | undefined;
+            return {
+              input: (t?.input ?? "").toString(),
+              output: (t?.output ?? "").toString(),
+            };
+          })
         : [];
 
     const functionCode: { language: string; code: string }[] =
       Array.isArray(body?.functionCode)
-        ? body.functionCode.map((fc: any) => ({
-            language: (fc?.language ?? "cpp").toString(),
-            code: (fc?.code ?? "").toString(),
-          }))
+        ? body.functionCode.map((fc: unknown) => {
+            const f = fc as Record<string, unknown> | undefined;
+            return {
+              language: (f?.language ?? "cpp").toString(),
+              code: (f?.code ?? "").toString(),
+            };
+          })
         : [];
 
     const completeCode: { language: string; code: string }[] =
       Array.isArray(body?.completeCode)
-        ? body.completeCode.map((fc: any) => ({
-            language: (fc?.language ?? "cpp").toString(),
-            code: (fc?.code ?? "").toString(),
-          }))
+        ? body.completeCode.map((fc: unknown) => {
+            const f = fc as Record<string, unknown> | undefined;
+            return {
+              language: (f?.language ?? "cpp").toString(),
+              code: (f?.code ?? "").toString(),
+            };
+          })
         : [];
 
     // Ensure unique slug
@@ -98,9 +113,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true, problem: created }, { status: 201 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "Failed to create problem", details: err?.message ?? String(err) },
+      { error: "Failed to create problem", details: message },
       { status: 500 }
     );
   }
