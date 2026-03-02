@@ -6,6 +6,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const getErrorCode = (error: unknown) => {
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return undefined;
+  }
+
+  const { code } = error;
+  return typeof code === "string" ? code : undefined;
+};
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +27,7 @@ export async function POST(req: Request) {
       );
     }
 
-const systemPrompt = `You are an expert leetcode problem creator. Generate a complete LeetCode-style problem with all required fields.
+    const systemPrompt = `You are an expert leetcode problem creator. Generate a complete LeetCode-style problem with all required fields.
 
 The problem should include:
 1. A clear, engaging title
@@ -36,7 +44,7 @@ The problem should include:
 
 Make the problem interesting, well-structured, and similar in style to the examples provided.`;
 
-const userPrompt = `Here are some example problems for reference:
+    const userPrompt = `Here are some example problems for reference:
 
 ${examples}
 
@@ -168,7 +176,7 @@ Generate a new, original leetcode problem following the same format and quality 
     let parsedContent;
     try {
       parsedContent = JSON.parse(generatedContent);
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         { error: "Failed to parse generated content" },
         { status: 500 }
@@ -192,17 +200,20 @@ Generate a new, original leetcode problem following the same format and quality 
       success: true,
       problem: validationResult.data,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error generating problem:", error);
 
-    if (error.code === "insufficient_quota") {
+    const errorCode = getErrorCode(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorCode === "insufficient_quota") {
       return NextResponse.json(
         { error: "OpenAI API quota exceeded" },
         { status: 429 }
       );
     }
 
-    if (error.code === "invalid_api_key") {
+    if (errorCode === "invalid_api_key") {
       return NextResponse.json(
         { error: "Invalid OpenAI API key" },
         { status: 401 }
@@ -212,7 +223,7 @@ Generate a new, original leetcode problem following the same format and quality 
     return NextResponse.json(
       {
         error: "Failed to generate problem",
-        details: error.message || String(error),
+        details: errorMessage,
       },
       { status: 500 }
     );

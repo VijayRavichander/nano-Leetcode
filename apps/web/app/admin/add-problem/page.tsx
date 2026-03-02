@@ -55,6 +55,13 @@ type ProblemForm = {
   completeCode: CodeAndLanguage[];
 };
 
+type ArrayFieldKey = {
+  [K in keyof ProblemForm]: ProblemForm[K] extends unknown[] ? K : never;
+}[keyof ProblemForm];
+
+type ArrayItem<K extends ArrayFieldKey> = ProblemForm[K][number];
+type ArrayItemUpdate<K extends ArrayFieldKey> = ArrayItem<K> extends string ? string : Partial<ArrayItem<K>>;
+
 const defaultForm: ProblemForm = {
   title: "",
   slug: "",
@@ -94,7 +101,7 @@ export default function AddProblemPage() {
       .replace(/\s+/g, "-");
   }, [form.title]);
 
-  const handleBasicChange = (key: keyof ProblemForm, value: string | string[] | DescriptionTestCase[] | SimpleTestCase[] | CodeAndLanguage[]) => {
+  const handleBasicChange = <K extends keyof ProblemForm>(key: K, value: ProblemForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -113,29 +120,29 @@ export default function AddProblemPage() {
     setForm((prev) => ({ ...prev, tags: prev.tags.filter((x) => x !== t) }));
   };
 
-  const updateArrayItem = <T extends unknown[]>(
-    key: keyof ProblemForm,
+  const updateArrayItem = <K extends ArrayFieldKey>(
+    key: K,
     index: number,
-    value: string | DescriptionTestCase | SimpleTestCase | CodeAndLanguage
+    value: ArrayItemUpdate<K>
   ) => {
     setForm((prev) => {
-      const list = [...(prev[key] as T)];
+      const list = [...prev[key]] as ProblemForm[K];
       const current = list[index];
       const next = typeof current === "object" && current !== null && typeof value === "object" && value !== null
-        ? { ...current, ...(value as object) }
+        ? { ...current, ...value }
         : value;
-      list[index] = next as T[number];
+      list[index] = next as ArrayItem<K>;
       return { ...prev, [key]: list } as ProblemForm;
     });
   };
 
-  const addArrayItem = (key: keyof ProblemForm, emptyItem: string | DescriptionTestCase | SimpleTestCase | CodeAndLanguage) => {
-    setForm((prev) => ({ ...prev, [key]: [ ...(prev[key] as unknown[]), emptyItem ] }));
+  const addArrayItem = <K extends ArrayFieldKey>(key: K, emptyItem: ArrayItem<K>) => {
+    setForm((prev) => ({ ...prev, [key]: [...prev[key], emptyItem] } as ProblemForm));
   };
 
-  const removeArrayItem = (key: keyof ProblemForm, index: number) => {
+  const removeArrayItem = <K extends ArrayFieldKey>(key: K, index: number) => {
     setForm((prev) => {
-      const list = [...(prev[key] as any[])];
+      const list = [...prev[key]] as ProblemForm[K];
       list.splice(index, 1);
       return { ...prev, [key]: list } as ProblemForm;
     });
@@ -337,7 +344,7 @@ export default function AddProblemPage() {
               <label className="text-sm font-medium">Difficulty</label>
               <Select
                 value={form.difficulty}
-                onValueChange={(v) => handleBasicChange("difficulty", v)}
+                onValueChange={(v) => handleBasicChange("difficulty", v as ProblemForm["difficulty"])}
               >
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select difficulty" />
@@ -353,7 +360,7 @@ export default function AddProblemPage() {
               <label className="text-sm font-medium">Type</label>
               <Select
                 value={form.type}
-                onValueChange={(v) => handleBasicChange("type", v)}
+                onValueChange={(v) => handleBasicChange("type", v as ProblemForm["type"])}
               >
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue placeholder="Select type" />
@@ -453,7 +460,7 @@ export default function AddProblemPage() {
                 <div key={i} className="flex gap-2">
                   <input
                     value={c}
-                    onChange={(e) => updateArrayItem<string[]>("constraints", i, e.target.value)}
+                    onChange={(e) => updateArrayItem("constraints", i, e.target.value)}
                     placeholder="1 <= n <= 1e5"
                     className={inputClass}
                   />
@@ -490,7 +497,7 @@ export default function AddProblemPage() {
                   <label className="text-sm font-medium">Input</label>
                   <textarea
                     value={tc.input}
-                    onChange={(e) => updateArrayItem<DescriptionTestCase[]>("testCases", i, { input: e.target.value })}
+                    onChange={(e) => updateArrayItem("testCases", i, { input: e.target.value })}
                     rows={3}
                     className={textareaClass}
                     placeholder="2\n1 2"
@@ -500,7 +507,7 @@ export default function AddProblemPage() {
                   <label className="text-sm font-medium">Output</label>
                   <textarea
                     value={tc.output}
-                    onChange={(e) => updateArrayItem<DescriptionTestCase[]>("testCases", i, { output: e.target.value })}
+                    onChange={(e) => updateArrayItem("testCases", i, { output: e.target.value })}
                     rows={3}
                     className={textareaClass}
                     placeholder="3"
@@ -511,7 +518,7 @@ export default function AddProblemPage() {
                 <label className="text-sm font-medium">Explanation</label>
                 <textarea
                   value={tc.explanation}
-                  onChange={(e) => updateArrayItem<DescriptionTestCase[]>("testCases", i, { explanation: e.target.value })}
+                  onChange={(e) => updateArrayItem("testCases", i, { explanation: e.target.value })}
                   rows={3}
                   className={textareaClass}
                   placeholder="Explain how the result is obtained."
@@ -557,7 +564,7 @@ export default function AddProblemPage() {
                 <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <textarea
                     value={tc.input}
-                    onChange={(e) => updateArrayItem<SimpleTestCase[]>("visibleTestCases", i, { input: e.target.value })}
+                    onChange={(e) => updateArrayItem("visibleTestCases", i, { input: e.target.value })}
                     rows={3}
                     className={textareaClass}
                     placeholder="Input"
@@ -565,7 +572,7 @@ export default function AddProblemPage() {
                   <div className="flex gap-2">
                     <textarea
                       value={tc.output}
-                      onChange={(e) => updateArrayItem<SimpleTestCase[]>("visibleTestCases", i, { output: e.target.value })}
+                      onChange={(e) => updateArrayItem("visibleTestCases", i, { output: e.target.value })}
                       rows={3}
                       className={textareaClass}
                       placeholder="Expected Output"
@@ -597,7 +604,7 @@ export default function AddProblemPage() {
                 <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <textarea
                     value={tc.input}
-                    onChange={(e) => updateArrayItem<SimpleTestCase[]>("hiddenTestCases", i, { input: e.target.value })}
+                    onChange={(e) => updateArrayItem("hiddenTestCases", i, { input: e.target.value })}
                     rows={3}
                     className={textareaClass}
                     placeholder="Input"
@@ -605,7 +612,7 @@ export default function AddProblemPage() {
                   <div className="flex gap-2">
                     <textarea
                       value={tc.output}
-                      onChange={(e) => updateArrayItem<SimpleTestCase[]>("hiddenTestCases", i, { output: e.target.value })}
+                      onChange={(e) => updateArrayItem("hiddenTestCases", i, { output: e.target.value })}
                       rows={3}
                       className={textareaClass}
                       placeholder="Expected Output"
@@ -649,7 +656,7 @@ export default function AddProblemPage() {
                   <span className="text-sm font-medium">Language</span>
                   <Select
                     value={fc.language}
-                    onValueChange={(v) => updateArrayItem<CodeAndLanguage[]>("functionCode", i, { language: v })}
+                    onValueChange={(v) => updateArrayItem("functionCode", i, { language: v })}
                   >
                     <SelectTrigger className={selectTriggerSmallClass}>
                       <SelectValue placeholder="Select language" />
@@ -677,7 +684,7 @@ export default function AddProblemPage() {
                   theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
                   defaultLanguage={fc.language}
                   value={fc.code}
-                  onChange={(val) => updateArrayItem<CodeAndLanguage[]>("functionCode", i, { code: val || "" })}
+                  onChange={(val) => updateArrayItem("functionCode", i, { code: val || "" })}
                   options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: "on" }}
                 />
               </div>
@@ -707,7 +714,7 @@ export default function AddProblemPage() {
                   <span className="text-sm font-medium">Language</span>
                   <Select
                     value={fc.language}
-                    onValueChange={(v) => updateArrayItem<CodeAndLanguage[]>("completeCode", i, { language: v })}
+                    onValueChange={(v) => updateArrayItem("completeCode", i, { language: v })}
                   >
                     <SelectTrigger className={selectTriggerSmallClass}>
                       <SelectValue placeholder="Select language" />
@@ -734,7 +741,7 @@ export default function AddProblemPage() {
                   theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
                   defaultLanguage={fc.language}
                   value={fc.code}
-                  onChange={(val) => updateArrayItem<CodeAndLanguage[]>("completeCode", i, { code: val || "" })}
+                  onChange={(val) => updateArrayItem("completeCode", i, { code: val || "" })}
                   options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: "on" }}
                 />
               </div>
