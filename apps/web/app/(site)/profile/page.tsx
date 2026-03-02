@@ -1,32 +1,24 @@
 "use client";
 
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "@/app/config";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
-import { useTokenStore } from "@/lib/store/uiStore";
-
-const USERID = "test";
 
 export default function Profile() {
   const router = useRouter();
   const [contributions, setContributions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { tokenStore } = useTokenStore();
 
   useEffect(() => {
     const getContributions = async () => {
       try {
-        const res = await axios.get(
-          `${BACKEND_URL}/v1/getContributions?userId=${USERID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${tokenStore}`,
-            },
-          }
-        );
-        const submissions = res.data.submissions;
+        const res = await fetch("/api/contributions");
+        if (!res.ok) {
+          router.push("/internal-server-error");
+          return;
+        }
+        const data = await res.json();
+        const submissions = data.submissions;
         console.log(submissions);
         setContributions(submissions);
         setIsLoading(false);
@@ -36,7 +28,7 @@ export default function Profile() {
     };
 
     void getContributions();
-  }, [router, tokenStore]);
+  }, [router]);
 
   if (isLoading) {
     return (
