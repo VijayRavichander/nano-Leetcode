@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Generate Prisma client
+        run: bun --cwd packages/db run prisma:generate
+
       - name: Build monorepo
         run: bun run build
 
@@ -57,9 +60,9 @@ jobs:
 
             cd projects/nano-Leetcode
             git pull --ff-only origin prod
-            bun install --frozen-lockfile
+            bun install 
+            bun --cwd packages/db run prisma:generate
             bun run build
 
             pm2 describe litecode-web > /dev/null 2>&1
             pm2 restart litecode-web
-
