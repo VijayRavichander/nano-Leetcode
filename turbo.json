@@ -3,6 +3,7 @@
   "ui": "tui",
   "globalEnv": [
     "NODE_ENV",
+    "DATABASE_URL",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "GITHUB_CLIENT_ID",
@@ -11,7 +12,7 @@
     "JUDGE0_API_KEY",
     "JUDGE0_HOST",
     "OPENAI_API_KEY",
-    "AUTH_SECRET"
+    "BETTER_AUTH_SECRET"
   ],
   "tasks": {
     "build": {
