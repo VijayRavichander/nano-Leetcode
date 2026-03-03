@@ -18,15 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
-      GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
       JUDGE0_URL: ${{ secrets.JUDGE0_URL }}
       JUDGE0_API_KEY: ${{ secrets.JUDGE0_API_KEY }}
       JUDGE0_HOST: ${{ secrets.JUDGE0_HOST }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      BETTER_AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      FEEDBACK_FROM_EMAIL: ${{ secrets.FEEDBACK_FROM_EMAIL }}
+      FEEDBACK_TO_EMAIL: ${{ secrets.FEEDBACK_TO_EMAIL }}
 
     steps:
       - name: Checkout repo
@@ -60,7 +62,17 @@ jobs:
     environment: production
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      BETTER_AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      JUDGE0_URL: ${{ secrets.JUDGE0_URL }}
+      JUDGE0_API_KEY: ${{ secrets.JUDGE0_API_KEY }}
+      JUDGE0_HOST: ${{ secrets.JUDGE0_HOST }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      FEEDBACK_FROM_EMAIL: ${{ secrets.FEEDBACK_FROM_EMAIL }}
+      FEEDBACK_TO_EMAIL: ${{ secrets.FEEDBACK_TO_EMAIL }}
 
     steps:
       - name: Deploy over SSH
@@ -69,7 +81,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DATABASE_URL,BETTER_AUTH_SECRET
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          envs: DATABASE_URL,BETTER_AUTH_SECRET,BETTER_AUTH_URL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,JUDGE0_URL,JUDGE0_API_KEY,JUDGE0_HOST,OPENAI_API_KEY,RESEND_API_KEY,FEEDBACK_FROM_EMAIL,FEEDBACK_TO_EMAIL
           script: |
             set -euo pipefail
 
@@ -85,4 +98,4 @@ jobs:
             bun run build
 
             pm2 describe litecode-web > /dev/null 2>&1
-            pm2 restart litecode-web
+            pm2 restart litecode-web --update-env
