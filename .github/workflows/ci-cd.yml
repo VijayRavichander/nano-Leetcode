@@ -88,6 +88,9 @@ jobs:
 
             # Change directory to the project root
             cd projects/nano-Leetcode
+            # Ensure Bun is available in this non-interactive SSH session.
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
             # Pull latest code from the prod branch
             git pull --ff-only origin prod
             # Install dependencies with Bun
