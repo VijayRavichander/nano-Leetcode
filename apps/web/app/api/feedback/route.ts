@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth/server-session";
 
 export const runtime = "nodejs";
 
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
   let session: FeedbackSession | null = null;
 
   try {
-    session = (await auth.api.getSession(req)) as FeedbackSession | null;
+    session = (await getServerSession(req)) as FeedbackSession | null;
   } catch (error) {
     console.error("Failed to load feedback session context", error);
   }

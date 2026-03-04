@@ -1,10 +1,10 @@
-import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/db";
+import { getServerSession } from "@/lib/auth/server-session";
 
 export async function GET(req: NextRequest) {
 
-  const session = await auth.api.getSession(req);
+  const session = await getServerSession(req);
 
   const problemId = req.nextUrl.searchParams.get("problemId");
   const cursor = req.nextUrl.searchParams.get("cursor");

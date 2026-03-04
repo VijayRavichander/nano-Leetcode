@@ -5,6 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { isDevAuthBypassEnabledClient } from "@/lib/auth/client-session";
 import { useRouter } from "next/navigation";
 
 interface NavbarSession {
@@ -28,6 +29,7 @@ const NavbarActionDropDown = ({
   const router = useRouter();
   const isLanding = variant === "landing";
   const isApp = variant === "app";
+  const isDevBypass = isDevAuthBypassEnabledClient();
   const displayName = session.data?.user?.name || session.data?.user?.email || "User";
   const initials = displayName
     .split(/[\s@._-]+/)
@@ -87,18 +89,20 @@ const NavbarActionDropDown = ({
         >
           Profile
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className={
-            isLanding
-              ? "text-[var(--landing-text)] focus:bg-transparent focus:text-[var(--landing-accent-blue-strong)]"
-              : isApp
-                ? "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
-              : "hover:bg-white/90!"
-          }
-          onClick={handleSignOut}
-        >
-          Logout
-        </DropdownMenuItem>
+        {isDevBypass ? null : (
+          <DropdownMenuItem
+            className={
+              isLanding
+                ? "text-[var(--landing-text)] focus:bg-transparent focus:text-[var(--landing-accent-blue-strong)]"
+                : isApp
+                  ? "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
+                  : "hover:bg-white/90!"
+            }
+            onClick={handleSignOut}
+          >
+            Logout
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

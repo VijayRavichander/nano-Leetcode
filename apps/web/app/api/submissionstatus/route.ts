@@ -1,11 +1,11 @@
 import { db } from "@repo/db";
 import { NextRequest, NextResponse } from "next/server";
 import { checkSubmissionStatus } from "./utils";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth/server-session";
 
 export async function GET(req: NextRequest) {
 
-  const session = await auth.api.getSession(req);
+  const session = await getServerSession(req);
 
   if(!session){
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

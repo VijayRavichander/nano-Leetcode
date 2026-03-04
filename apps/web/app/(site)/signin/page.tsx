@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { isDevAuthBypassEnabledClient } from "@/lib/auth/client-session";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -13,6 +16,15 @@ import {
 import { Google } from "@lobehub/icons";
 
 export default function Signin() {
+  const router = useRouter();
+  const isDevBypass = isDevAuthBypassEnabledClient();
+
+  useEffect(() => {
+    if (isDevBypass) {
+      router.replace("/problem");
+    }
+  }, [isDevBypass, router]);
+
   const handleSignin = async () => {
     try {
       await authClient.signIn.social({
@@ -24,6 +36,21 @@ export default function Signin() {
       toast.error("Something went wrong");
     }
   };
+
+  if (isDevBypass) {
+    return (
+      <div className="app-theme app-page flex min-h-screen items-center justify-center px-6 py-16">
+        <Card className="w-full max-w-md border-[var(--app-border)] bg-[var(--app-panel)] text-[var(--app-text)] shadow-[var(--app-shadow)]">
+          <CardHeader className="text-center">
+            <CardTitle>Development auth bypass enabled</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center text-sm text-[var(--app-muted)]">
+            Redirecting to the problem workspace with the dummy development user.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="app-theme app-page flex min-h-screen items-center justify-center px-6 py-16">

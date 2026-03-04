@@ -19,9 +19,9 @@ import {
   type SupportedLanguage,
 } from "@/lib/store/codeStore";
 import { useProblemUIStore } from "@/lib/store/uiStore";
+import { useAppSession } from "@/lib/auth/client-session";
 import NavbarActionDropDown from "./ActionDropDown";
 import ThemeToggle from "./ThemeToggle";
-import { authClient } from "@/lib/auth-client";
 import { runCode, submitCode } from "@/lib/api/execution";
 import { getSubmissionStatus } from "@/lib/api/submission";
 import { useExecutionStore } from "@/lib/store/executionStore";
@@ -44,7 +44,7 @@ const NavBar = ({ workspace = false }: NavBarProps) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const session = authClient.useSession();
+  const session = useAppSession();
   const router = useRouter();
   const pathname = usePathname();
   const isLanding = pathname === "/";

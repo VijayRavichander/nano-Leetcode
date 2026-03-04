@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/db";
+import { getServerSession } from "@/lib/auth/server-session";
 import axios from "axios";
 import {
   parseCodeTemplates,
@@ -31,7 +31,7 @@ interface RunResult {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth.api.getSession(req);
+    const session = await getServerSession(req);
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
