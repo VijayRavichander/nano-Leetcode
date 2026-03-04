@@ -67,12 +67,6 @@ export default function ContributionHeatmap({
 
   const { grid, monthLabels, maxCount, totalCount } =
     useMemo(() => {
-      const countMap: Record<string, number> = {};
-      for (const s of submissions) {
-        const key = toDateKey(new Date(s.createdAt));
-        countMap[key] = (countMap[key] || 0) + 1;
-      }
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayDay = today.getDay();
@@ -81,6 +75,17 @@ export default function ContributionHeatmap({
       const totalDays = WEEKS * DAYS_PER_WEEK + todayDay + 1;
       const startDate = new Date(endDate);
       startDate.setDate(startDate.getDate() - totalDays + 1);
+
+      const startKey = toDateKey(startDate);
+      const endKey = toDateKey(endDate);
+
+      const countMap: Record<string, number> = {};
+      for (const s of submissions) {
+        const key = toDateKey(new Date(s.createdAt));
+        if (key >= startKey && key <= endKey) {
+          countMap[key] = (countMap[key] || 0) + 1;
+        }
+      }
 
       const weeks: { date: string; count: number; dayOfWeek: number }[][] = [];
       let currentWeek: { date: string; count: number; dayOfWeek: number }[] =
