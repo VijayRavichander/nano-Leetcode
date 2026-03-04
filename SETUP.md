@@ -33,7 +33,6 @@ Do not start feature work until step 5 is done. The app imports `@repo/db`, and 
 
 - `apps/web`: Next.js application
 - `packages/db`: Prisma schema, Prisma client package, migration scripts
-- `deploy`: server bootstrap and deployment notes
 
 ## Prerequisites
 
@@ -43,19 +42,6 @@ Install these on your machine:
 - `node` `20.x`
 - `bun`
 - a Postgres database, local or remote
-
-Check versions:
-
-```bash
-node -v
-bun -v
-```
-
-Install workspace dependencies from the repo root:
-
-```bash
-bun install
-```
 
 ## Env files
 
@@ -150,46 +136,6 @@ Repo detail:
 - Auth is handled by Better Auth through `apps/web/app/api/auth/[...all]/route.ts`
 - The browser auth client uses `http://localhost:3000` in development
 
-### Required if you touch code execution or submissions
-
-- Judge0 credentials
-  - Populate `JUDGE0_URL`
-  - Populate `JUDGE0_API_KEY`
-  - Populate `JUDGE0_HOST`
-
-These are used by:
-
-- `apps/web/app/api/run/route.ts`
-- `apps/web/app/api/submit/route.ts`
-- `apps/web/app/api/submissionstatus/utils.ts`
-
-
-### Required if you touch feedback email
-
-- Resend API key
-  - Populate `RESEND_API_KEY`
-- Verified sender/domain in Resend
-  - Populate `FEEDBACK_FROM_EMAIL`
-- Destination inbox
-  - Populate `FEEDBACK_TO_EMAIL`
-
-Used by:
-
-- `apps/web/app/api/feedback/route.ts`
-
-## OAuth client setup guidance
-
-You should provision OAuth credentials before starting auth-related work.
-
-Minimum local assumptions from this repo:
-
-- local app origin: `http://localhost:3000`
-- auth route lives under: `/api/auth/*`
-
-When creating Google and GitHub clients, use the local app origin above and the Better Auth callback path used by the app's auth routes.
-
-If you are also testing against a deployed environment, provision separate production credentials rather than reusing the local ones.
-
 ## Database setup
 
 After creating `packages/db/.env`, apply the checked-in Prisma migrations:
@@ -213,35 +159,6 @@ If the Prisma schema changes later, rerun:
 bun run --cwd packages/db prisma:generate
 ```
 
-## First local boot
-
-From the repo root:
-
-```bash
-bun install
-bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
-bun run --cwd packages/db prisma:generate
-bun run dev
-```
-
-Expected local app URL:
-
-```text
-http://localhost:3000
-```
-
-## Minimum smoke test
-
-Before starting a task, verify:
-
-1. The web app loads on `http://localhost:3000`
-2. Prisma client generation completed without errors
-3. The database is reachable through `DATABASE_URL`
-4. If you are working on auth, login providers are configured
-5. If you are working on submissions, Judge0 credentials are configured
-6. If you are working on feedback, Resend credentials are configured
-7. If you are working on admin generation, OpenAI credentials are configured
-
 ## Day-to-day commands
 
 From the repo root:
@@ -260,41 +177,31 @@ bun run --cwd packages/db prisma:validate
 bun run --cwd packages/db prisma:generate
 ```
 
-## Troubleshooting
+## Cursor Cloud specific instructions
 
-### App boots but auth is broken locally
+### Overview
 
-Check:
+LiteCode is a LeetCode-style coding platform built as a Turborepo monorepo with Bun workspaces. The main app is a Next.js 15 web app in `apps/web` backed by PostgreSQL via Prisma (`packages/db`).
 
-- `apps/web/.env.local` exists
-- `BETTER_AUTH_SECRET` is set
-- Google and GitHub client IDs and secrets are present if you are testing social login
-- you are running on port `3000`, or you updated `apps/web/lib/auth-client.ts`
+### Runtime
 
-### Type errors or runtime errors from `@repo/db`
+- **Node.js 20.x** and **Bun 1.2.2** are required. Bun is installed at `~/.bun/bin/bun`.
+- nvm default is set to Node 20. If you open a new shell, run `source ~/.nvm/nvm.sh` to pick up nvm.
 
-Usually means the Prisma client has not been generated yet.
+### Database
+- Prisma reads `DATABASE_URL` from `packages/db/.env`. Only use the neon database and not create a local database for yourself
 
-Run:
+### Env files
 
-```bash
-bun run --cwd packages/db prisma:generate
-```
+- `packages/db/.env` — contains `DATABASE_URL` for Prisma.
+- `apps/web/.env.local` — contains auth secrets, API keys, and dev bypass flags. `NEXT_PUBLIC_DEV_AUTH_BYPASS="true"` skips OAuth login for local development.
 
-### Database connection failures
+### Day-to-day commands (from repo root)
 
-Check `packages/db/.env` and verify `DATABASE_URL` points to a reachable Postgres instance.
+See `SETUP.md` for the full list. Key commands:
 
-### Submission APIs fail
-
-Check the Judge0 env values in `apps/web/.env.local`.
-
-### Feedback email fails
-
-Check:
-
-- `RESEND_API_KEY`
-- `FEEDBACK_FROM_EMAIL`
-- `FEEDBACK_TO_EMAIL`
-- sender/domain verification status in Resend
-
+- `bun run dev` — start Next.js dev server on port 3000
+- `bun run lint` — ESLint across all packages
+- `bun run check-types` — TypeScript type checking
+- `bun run build` — production build (has a pre-existing `<Html>` import error on `/_error`; dev server works fine)
+- `bun run --cwd packages/db prisma:generate` — regenerate Prisma client after schema changes
