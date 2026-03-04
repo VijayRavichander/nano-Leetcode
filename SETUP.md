@@ -66,7 +66,7 @@ This repo currently uses two local env files.
 Put only database connection state here:
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public"
+DATABASE_URL=""
 ```
 
 ### `apps/web/.env.local`
@@ -74,7 +74,8 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public"
 Put all web-app and external service secrets here:
 
 ```env
-BETTER_AUTH_SECRET="replace-with-a-long-random-string"
+BETTER_AUTH_SECRET=""
+BETTER_AUTH_URL=""
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
 GITHUB_CLIENT_ID=""
@@ -97,6 +98,7 @@ NEXT_PUBLIC_DEV_AUTH_DUMMY_EMAIL="dev@litecode.local"
   - `DATABASE_URL`
 - `apps/web/.env.local`
   - `BETTER_AUTH_SECRET`
+  - `BETTER_AUTH_URL`
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`
   - `GITHUB_CLIENT_ID`
@@ -131,8 +133,7 @@ This is the list of external accounts, clients, and keys a new developer or agen
   - Wired through `packages/db/.env`
 
 - Better Auth secret
-  - Set `BETTER_AUTH_SECRET` in `apps/web/.env.local`
-  - Use a long random string
+  - Set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` in `apps/web/.env.local`
 
 ### Required if you touch login or protected flows
 
