@@ -72,6 +72,11 @@
   --app-danger-text: #9f4f45;
   --app-shadow: 0 6px 18px rgba(23, 23, 23, 0.05);
   --app-shadow-strong: 0 14px 34px rgba(23, 23, 23, 0.08);
+  --heatmap-empty: #e8e3da;
+  --heatmap-l1: #d6daf3;
+  --heatmap-l2: #adb3e6;
+  --heatmap-l3: #7b88d6;
+  --heatmap-l4: #4f5ec7;
 }
 
 .dark {
@@ -142,6 +147,11 @@
   --app-danger-text: #e0a39b;
   --app-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
   --app-shadow-strong: 0 14px 34px rgba(0, 0, 0, 0.3);
+  --heatmap-empty: #1e2330;
+  --heatmap-l1: #282e4a;
+  --heatmap-l2: #3f4878;
+  --heatmap-l3: #6373c7;
+  --heatmap-l4: #9aaeff;
 }
 
 @theme inline {

@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
+import ContributionHeatmap from "@/components/ContributionHeatmap";
 
 export default function Profile() {
   const router = useRouter();
-  const [contributions, setContributions] = useState([]);
+  const [contributions, setContributions] = useState<{ createdAt: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,9 +19,7 @@ export default function Profile() {
           return;
         }
         const data = await res.json();
-        const submissions = data.submissions;
-        console.log(submissions);
-        setContributions(submissions);
+        setContributions(data.submissions);
         setIsLoading(false);
       } catch {
         router.push("/internal-server-error");
@@ -52,25 +51,12 @@ export default function Profile() {
         </div>
 
         <div className="app-panel mt-10 p-6 md:p-8">
-          <div className="max-w-2xl">
-            <h2 className="text-lg font-semibold text-[var(--app-text)]">Submission activity</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-muted)]">
-              Contribution history is not fully wired into this view yet. Your data fetch remains
-              intact, and this section is ready to host the chart once it is connected.
-            </p>
-            <div className="app-empty-state mt-6">
-              <div className="text-center">
-                <p className="text-sm font-medium text-[var(--app-text)]">
-                  {contributions.length > 0
-                    ? `${contributions.length} submissions loaded`
-                    : "No contribution chart available yet"}
-                </p>
-                <p className="mt-2 text-sm text-[var(--app-muted)]">
-                  This page now matches the site design system and is ready for the heatmap
-                  component.
-                </p>
-              </div>
-            </div>
+          <h2 className="text-lg font-semibold text-[var(--app-text)]">Submission activity</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--app-muted)]">
+            Your submission history over the last year.
+          </p>
+          <div className="mt-6">
+            <ContributionHeatmap submissions={contributions} />
           </div>
         </div>
       </div>
