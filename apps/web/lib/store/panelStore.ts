@@ -89,6 +89,8 @@ export const usePanelStore = create<PanelState>()(
         if (fromPanel === toPanel) return;
 
         set((state) => {
+          if (state.layout[fromPanel].length <= 1) return state;
+
           const newLayout: PanelLayout = {
             left: [...state.layout.left],
             topRight: [...state.layout.topRight],
