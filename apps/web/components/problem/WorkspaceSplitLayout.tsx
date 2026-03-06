@@ -9,31 +9,35 @@ import {
 } from "react";
 import PaneResizeHandle from "@/components/problem/PaneResizeHandle";
 import type { WorkspaceLayoutState } from "@/lib/types/workspace";
+import { type TabId, TAB_LABELS } from "@/lib/store/panelStore";
 
 interface WorkspaceSplitLayoutProps {
   layout: WorkspaceLayoutState;
   setLeftPaneRatio: (ratio: number) => void;
   setTopRightRatio: (ratio: number) => void;
-  questionPane: React.ReactNode;
-  editorPane: React.ReactNode;
-  resultPane: React.ReactNode;
+  leftPanel: React.ReactNode;
+  topRightPanel: React.ReactNode;
+  bottomRightPanel: React.ReactNode;
+  renderMobileContent: (tabId: TabId) => React.ReactNode;
 }
 
 type DragAxis = "vertical" | "horizontal" | null;
-type MobileSection = "question" | "editor" | "results";
+
+const MOBILE_TABS: TabId[] = ["question", "editor", "results", "notes"];
 
 const WorkspaceSplitLayout = ({
   layout,
   setLeftPaneRatio,
   setTopRightRatio,
-  questionPane,
-  editorPane,
-  resultPane,
+  leftPanel,
+  topRightPanel,
+  bottomRightPanel,
+  renderMobileContent,
 }: WorkspaceSplitLayoutProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rightPaneRef = useRef<HTMLDivElement | null>(null);
   const [dragAxis, setDragAxis] = useState<DragAxis>(null);
-  const [mobileSection, setMobileSection] = useState<MobileSection>("question");
+  const [mobileTab, setMobileTab] = useState<TabId>("question");
 
   useEffect(() => {
     if (!dragAxis) {
@@ -95,6 +99,7 @@ const WorkspaceSplitLayout = ({
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)]">
+      {/* Desktop layout */}
       <div
         className={`hidden h-full min-h-0 flex-1 md:flex ${desktopClassName}`}
         ref={containerRef}
@@ -103,12 +108,12 @@ const WorkspaceSplitLayout = ({
           className="flex min-h-0 min-w-0 flex-col overflow-hidden border-r border-[var(--app-border)] bg-[var(--app-panel)]"
           style={desktopPaneStyle.left}
         >
-          {questionPane}
+          {leftPanel}
         </div>
 
         <PaneResizeHandle
           orientation="vertical"
-          ariaLabel="Resize question and code panes"
+          ariaLabel="Resize left and right panes"
           onPointerDown={(event: ReactPointerEvent<HTMLButtonElement>) => {
             event.preventDefault();
             setDragAxis("vertical");
@@ -119,14 +124,20 @@ const WorkspaceSplitLayout = ({
           isActive={dragAxis === "vertical"}
         />
 
-        <div ref={rightPaneRef} className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-panel)]">
-          <div className="flex min-h-0 flex-col overflow-hidden" style={desktopPaneStyle.rightTop}>
-            {editorPane}
+        <div
+          ref={rightPaneRef}
+          className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-panel)]"
+        >
+          <div
+            className="flex min-h-0 flex-col overflow-hidden"
+            style={desktopPaneStyle.rightTop}
+          >
+            {topRightPanel}
           </div>
 
           <PaneResizeHandle
             orientation="horizontal"
-            ariaLabel="Resize editor and result panes"
+            ariaLabel="Resize top and bottom right panes"
             onPointerDown={(event: ReactPointerEvent<HTMLButtonElement>) => {
               event.preventDefault();
               setDragAxis("horizontal");
@@ -138,52 +149,32 @@ const WorkspaceSplitLayout = ({
           />
 
           <div className="min-h-0 flex-1 overflow-hidden border-t border-[var(--app-border)]">
-            {resultPane}
+            {bottomRightPanel}
           </div>
         </div>
       </div>
 
+      {/* Mobile layout */}
       <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)] md:hidden">
         <div className="flex gap-3 border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3 py-1.5">
-          <button
-            type="button"
-            onClick={() => setMobileSection("question")}
-            className={`px-0 py-0 text-[10px] font-medium ${
-              mobileSection === "question"
-                ? "app-text-action text-[var(--app-text)] underline"
-                : "app-text-action app-text-action-muted"
-            }`}
-          >
-            Question
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileSection("editor")}
-            className={`px-0 py-0 text-[10px] font-medium ${
-              mobileSection === "editor"
-                ? "app-text-action text-[var(--app-text)] underline"
-                : "app-text-action app-text-action-muted"
-            }`}
-          >
-            Editor
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileSection("results")}
-            className={`px-0 py-0 text-[10px] font-medium ${
-              mobileSection === "results"
-                ? "app-text-action text-[var(--app-text)] underline"
-                : "app-text-action app-text-action-muted"
-            }`}
-          >
-            Results
-          </button>
+          {MOBILE_TABS.map((tabId) => (
+            <button
+              key={tabId}
+              type="button"
+              onClick={() => setMobileTab(tabId)}
+              className={`px-0 py-0 text-[10px] font-medium ${
+                mobileTab === tabId
+                  ? "app-text-action text-[var(--app-text)] underline"
+                  : "app-text-action app-text-action-muted"
+              }`}
+            >
+              {TAB_LABELS[tabId]}
+            </button>
+          ))}
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden bg-[var(--app-panel)]">
-          {mobileSection === "question" ? questionPane : null}
-          {mobileSection === "editor" ? editorPane : null}
-          {mobileSection === "results" ? resultPane : null}
+          {renderMobileContent(mobileTab)}
         </div>
       </div>
     </div>
