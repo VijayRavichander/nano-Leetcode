@@ -14,7 +14,7 @@ const DEFAULT_LAYOUT: WorkspaceLayoutState = {
 };
 
 const LEFT_BOUNDS = { min: 0.25, max: 0.7 };
-const TOP_BOUNDS = { min: 0.3, max: 0.8 };
+const TOP_BOUNDS = { min: 0.08, max: 0.92 };
 
 const clamp = (value: number, min: number, max: number) => {
   if (!Number.isFinite(value)) {
