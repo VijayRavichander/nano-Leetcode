@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import SubmissionTab from "@/components/submission/SubmissionTab";
 import LeaderBoardTab from "@/components/LeaderBoard";
 import ProblemPane from "@/components/problem/ProblemPane";
 import EditorPane from "@/components/problem/EditorPane";
 import ResultPane from "@/components/problem/ResultPane";
+import NotesPane from "@/components/problem/NotesPane";
+import WorkspacePanel from "@/components/problem/WorkspacePanel";
 import WorkspaceSplitLayout from "@/components/problem/WorkspaceSplitLayout";
 import { useWorkspaceLayout } from "@/lib/hooks/useWorkspaceLayout";
 import { initializeProblemSession } from "@/lib/problem/session";
 import { useCodeStore, useLangStore } from "@/lib/store/codeStore";
 import { useProblemUIStore } from "@/lib/store/uiStore";
+import { usePanelStore, type TabId } from "@/lib/store/panelStore";
 import type { ProblemDetail } from "@/lib/types/problem";
 import type { WorkspaceMode } from "@/lib/types/workspace";
 
@@ -35,6 +38,7 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
   const language = useLangStore((state) => state.lang);
   const setCurrentSlug = useCodeStore((state) => state.setCurrentSlug);
   const ensureCodeForSlug = useCodeStore((state) => state.ensureCodeForSlug);
+  const resetPanelLayout = usePanelStore((state) => state.resetPanelLayout);
 
   const {
     leftPaneRatio,
@@ -66,6 +70,29 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
     setProblemId,
   ]);
 
+  const handleResetLayout = useCallback(() => {
+    resetLayout();
+    resetPanelLayout();
+  }, [resetLayout, resetPanelLayout]);
+
+  const renderMobileContent = useCallback(
+    (tabId: TabId) => {
+      switch (tabId) {
+        case "question":
+          return <ProblemPane problem={problem} />;
+        case "editor":
+          return <EditorPane />;
+        case "results":
+          return <ResultPane problem={problem} />;
+        case "notes":
+          return <NotesPane />;
+        default:
+          return null;
+      }
+    },
+    [problem]
+  );
+
   return (
     <section className="app-theme flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--app-panel)] text-[var(--app-text)]">
       <header className="app-toolbar flex items-center justify-between px-3 py-2 md:px-4">
@@ -88,7 +115,7 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
           ))}
           <Button
             type="button"
-            onClick={resetLayout}
+            onClick={handleResetLayout}
             className="app-text-action app-text-action-muted hidden px-0 py-0 text-[10px] md:inline-flex"
           >
             Reset Layout
@@ -102,9 +129,14 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
             layout={{ leftPaneRatio, topRightRatio }}
             setLeftPaneRatio={setLeftPaneRatio}
             setTopRightRatio={setTopRightRatio}
-            questionPane={<ProblemPane problem={problem} />}
-            editorPane={<EditorPane problem={problem} />}
-            resultPane={<ResultPane problem={problem} />}
+            leftPanel={<WorkspacePanel panelId="left" problem={problem} />}
+            topRightPanel={
+              <WorkspacePanel panelId="topRight" problem={problem} />
+            }
+            bottomRightPanel={
+              <WorkspacePanel panelId="bottomRight" problem={problem} />
+            }
+            renderMobileContent={renderMobileContent}
           />
         ) : null}
 
