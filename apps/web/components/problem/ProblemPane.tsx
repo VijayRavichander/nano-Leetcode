@@ -17,7 +17,7 @@ const ProblemPane = ({ problem }: ProblemPaneProps) => {
   }, [problem.id]);
 
   return (
-    <section className="flex h-full flex-col overflow-y-auto px-4 py-3">
+    <section className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain px-4 py-3">
       <header className="border-b border-[var(--app-border)] pb-3">
         <h1 className="text-lg font-semibold leading-6 text-[var(--app-text)]">{problem.title}</h1>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">

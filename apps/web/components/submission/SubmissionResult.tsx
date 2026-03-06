@@ -92,7 +92,7 @@ const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) =
       <div className="h-full overflow-auto">
         <div className="px-3.5 py-3 text-sm">
           <Tabs defaultValue="0" className="text-sm text-[var(--app-muted)]">
-            <div className="rounded-xl bg-[var(--app-panel)]">
+            <div data-results-controls className="rounded-xl bg-[var(--app-panel)]">
               <TabsList className="bg-[var(--app-panel-muted)] p-1.5">
                 {sampleTestCases.map((testCase, index) => {
                   const status = testCaseStatus[index];
