@@ -1,93 +1,47 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import type { DragEvent } from "react";
 import {
   type TabId,
   type PanelId,
   usePanelStore,
   TAB_LABELS,
-  PANEL_LABELS,
-  ALL_PANELS,
 } from "@/lib/store/panelStore";
-import { ArrowRightLeft } from "lucide-react";
-
-interface MoveMenuProps {
-  tabId: TabId;
-  panelId: PanelId;
-  onMove: (tabId: TabId, from: PanelId, to: PanelId) => void;
-}
-
-const MoveMenu = ({ tabId, panelId, onMove }: MoveMenuProps) => {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const otherPanels = ALL_PANELS.filter((p) => p !== panelId);
-
-  const close = useCallback(() => setOpen(false), []);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        btnRef.current &&
-        !btnRef.current.contains(e.target as Node)
-      ) {
-        close();
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("pointerdown", handleClick);
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("pointerdown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [open, close]);
-
-  return (
-    <div className="relative">
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="rounded p-1 text-[var(--app-muted)] opacity-0 transition-all hover:bg-[var(--app-panel-muted)] hover:text-[var(--app-text)] group-hover:opacity-100"
-      >
-        <ArrowRightLeft className="h-3 w-3" />
-      </button>
-
-      {open && (
-        <div
-          ref={menuRef}
-          className="absolute left-0 top-full z-50 mt-1 min-w-[150px] rounded-md border border-[var(--app-border)] bg-[var(--app-panel)] py-1 shadow-md"
-        >
-          {otherPanels.map((targetPanel) => (
-            <button
-              key={targetPanel}
-              type="button"
-              onClick={() => {
-                onMove(tabId, panelId, targetPanel);
-                setOpen(false);
-              }}
-              className="flex w-full cursor-pointer items-center px-3 py-1.5 text-xs text-[var(--app-text)] hover:bg-[var(--app-panel-muted)]"
-            >
-              Move to {PANEL_LABELS[targetPanel]}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 interface PanelTabBarProps {
   panelId: PanelId;
   extraControls?: React.ReactNode;
 }
+
+interface DragTabPayload {
+  tabId: TabId;
+  fromPanel: PanelId;
+}
+
+const TAB_DRAG_MIME_TYPE = "application/x-litecode-tab";
+
+const parseDragPayload = (event: DragEvent): DragTabPayload | null => {
+  const payload = event.dataTransfer.getData(TAB_DRAG_MIME_TYPE);
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(payload) as Partial<DragTabPayload>;
+
+    if (!parsed.tabId || !parsed.fromPanel) {
+      return null;
+    }
+
+    return {
+      tabId: parsed.tabId,
+      fromPanel: parsed.fromPanel,
+    };
+  } catch {
+    return null;
+  }
+};
 
 const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
   const tabs = usePanelStore((s) => s.layout[panelId]);
@@ -97,17 +51,62 @@ const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
 
   if (tabs.length === 0) return null;
 
-  const canMove = tabs.length > 1;
-
   return (
     <div className="flex h-9 shrink-0 items-center justify-between border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-1">
-      <div className="flex items-center">
-        {tabs.map((tabId: TabId) => (
-          <div key={tabId} className="group relative flex items-center">
+      <div
+        className="flex items-center"
+        onDragOver={(event) => {
+          if (parseDragPayload(event)) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          }
+        }}
+        onDrop={(event) => {
+          const payload = parseDragPayload(event);
+
+          if (!payload) {
+            return;
+          }
+
+          event.preventDefault();
+          moveTab(payload.tabId, payload.fromPanel, panelId, tabs.length);
+        }}
+      >
+        {tabs.map((tabId: TabId, index) => (
+          <div
+            key={tabId}
+            className="relative flex items-center"
+            onDragOver={(event) => {
+              if (!parseDragPayload(event)) {
+                return;
+              }
+
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(event) => {
+              const payload = parseDragPayload(event);
+
+              if (!payload) {
+                return;
+              }
+
+              event.preventDefault();
+              moveTab(payload.tabId, payload.fromPanel, panelId, index);
+            }}
+          >
             <button
               type="button"
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData(
+                  TAB_DRAG_MIME_TYPE,
+                  JSON.stringify({ tabId, fromPanel: panelId })
+                );
+              }}
               onClick={() => setActiveTab(panelId, tabId)}
-              className={`relative px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+              className={`relative cursor-grab px-2.5 py-1.5 text-[11px] font-medium transition-colors active:cursor-grabbing ${
                 activeTab === tabId
                   ? "text-[var(--app-text)]"
                   : "text-[var(--app-muted)] hover:text-[var(--app-text)]"
@@ -118,10 +117,6 @@ const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
                 <span className="absolute bottom-0 left-1/2 h-[1.5px] w-[60%] -translate-x-1/2 bg-[var(--app-text)]" />
               )}
             </button>
-
-            {canMove && (
-              <MoveMenu tabId={tabId} panelId={panelId} onMove={moveTab} />
-            )}
           </div>
         ))}
       </div>

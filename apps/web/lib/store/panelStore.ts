@@ -25,7 +25,12 @@ export interface ActiveTabs {
 interface PanelState {
   layout: PanelLayout;
   activeTabs: ActiveTabs;
-  moveTab: (tabId: TabId, fromPanel: PanelId, toPanel: PanelId) => void;
+  moveTab: (
+    tabId: TabId,
+    fromPanel: PanelId,
+    toPanel: PanelId,
+    targetIndex?: number
+  ) => void;
   setActiveTab: (panelId: PanelId, tabId: TabId) => void;
   resetPanelLayout: () => void;
 }
@@ -85,24 +90,33 @@ export const usePanelStore = create<PanelState>()(
       layout: { ...DEFAULT_LAYOUT },
       activeTabs: { ...DEFAULT_ACTIVE },
 
-      moveTab: (tabId, fromPanel, toPanel) => {
-        if (fromPanel === toPanel) return;
-
+      moveTab: (tabId, fromPanel, toPanel, targetIndex) => {
         set((state) => {
-          if (state.layout[fromPanel].length <= 1) return state;
-
           const newLayout: PanelLayout = {
             left: [...state.layout.left],
             topRight: [...state.layout.topRight],
             bottomRight: [...state.layout.bottomRight],
           };
 
+          if (!newLayout[fromPanel].includes(tabId)) {
+            return state;
+          }
+
           newLayout[fromPanel] = newLayout[fromPanel].filter(
             (id) => id !== tabId
           );
 
-          if (!newLayout[toPanel].includes(tabId)) {
-            newLayout[toPanel] = [...newLayout[toPanel], tabId];
+          const destinationTabs = [...newLayout[toPanel]].filter((id) => id !== tabId);
+          const insertionIndex =
+            typeof targetIndex === "number"
+              ? Math.min(Math.max(targetIndex, 0), destinationTabs.length)
+              : destinationTabs.length;
+
+          destinationTabs.splice(insertionIndex, 0, tabId);
+          newLayout[toPanel] = destinationTabs;
+
+          if (newLayout[fromPanel].length === 0 && fromPanel === toPanel) {
+            newLayout[fromPanel] = [tabId];
           }
 
           const newActiveTabs: ActiveTabs = { ...state.activeTabs };

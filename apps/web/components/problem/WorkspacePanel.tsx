@@ -1,6 +1,7 @@
 "use client";
 
-import { type PanelId, usePanelStore } from "@/lib/store/panelStore";
+import type { DragEvent } from "react";
+import { type PanelId, type TabId, usePanelStore } from "@/lib/store/panelStore";
 import { RotateCcw } from "lucide-react";
 import PanelTabBar from "./PanelTabBar";
 import ProblemPane from "./ProblemPane";
@@ -20,6 +21,36 @@ interface WorkspacePanelProps {
   panelId: PanelId;
   problem: ProblemDetail;
 }
+
+interface DragTabPayload {
+  tabId: TabId;
+  fromPanel: PanelId;
+}
+
+const TAB_DRAG_MIME_TYPE = "application/x-litecode-tab";
+
+const parseDragPayload = (event: DragEvent): DragTabPayload | null => {
+  const payload = event.dataTransfer.getData(TAB_DRAG_MIME_TYPE);
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(payload) as Partial<DragTabPayload>;
+
+    if (!parsed.tabId || !parsed.fromPanel) {
+      return null;
+    }
+
+    return {
+      tabId: parsed.tabId,
+      fromPanel: parsed.fromPanel,
+    };
+  } catch {
+    return null;
+  }
+};
 
 const EditorActions = ({ problem }: { problem: ProblemDetail }) => {
   const currentSlug = useCurrentSlug();
@@ -51,10 +82,29 @@ const EditorActions = ({ problem }: { problem: ProblemDetail }) => {
 const WorkspacePanel = ({ panelId, problem }: WorkspacePanelProps) => {
   const tabs = usePanelStore((s) => s.layout[panelId]);
   const activeTab = usePanelStore((s) => s.activeTabs[panelId]);
+  const moveTab = usePanelStore((s) => s.moveTab);
 
   if (tabs.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center bg-[var(--app-panel)] text-xs text-[var(--app-muted)]">
+      <div
+        onDragOver={(event) => {
+          if (parseDragPayload(event)) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          }
+        }}
+        onDrop={(event) => {
+          const payload = parseDragPayload(event);
+
+          if (!payload) {
+            return;
+          }
+
+          event.preventDefault();
+          moveTab(payload.tabId, payload.fromPanel, panelId, 0);
+        }}
+        className="flex h-full items-center justify-center bg-[var(--app-panel)] text-xs text-[var(--app-muted)]"
+      >
         Drop a tab here
       </div>
     );
