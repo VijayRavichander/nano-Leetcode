@@ -8,6 +8,7 @@ import SubmissionTab from "@/components/submission/SubmissionTab";
 import EditorPane from "./EditorPane";
 import ResultPane from "./ResultPane";
 import NotesPane from "./NotesPane";
+import AIPane from "./AIPane";
 import {
   useCodeStore,
   useCurrentSlug,
@@ -70,6 +71,7 @@ const WorkspacePanel = ({ panelId, problem }: WorkspacePanelProps) => {
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === "question" && <ProblemPane problem={problem} />}
         {activeTab === "submissions" && <SubmissionTab />}
+        {activeTab === "ai" && <AIPane problem={problem} />}
         {activeTab === "editor" && <EditorPane />}
         {activeTab === "results" && <ResultPane problem={problem} />}
         {activeTab === "notes" && <NotesPane />}

@@ -19,7 +19,14 @@ interface DragPayload {
 }
 
 const DRAG_MIME_TYPE = "application/x-litecode-tab";
-const VALID_TAB_IDS: TabId[] = ["question", "submissions", "editor", "results", "notes"];
+const VALID_TAB_IDS: TabId[] = [
+  "question",
+  "submissions",
+  "ai",
+  "editor",
+  "results",
+  "notes",
+];
 const VALID_PANEL_IDS: PanelId[] = ["left", "topRight", "bottomRight"];
 let currentDragPayload: DragPayload | null = null;
 

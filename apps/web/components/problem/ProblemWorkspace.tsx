@@ -6,6 +6,7 @@ import ProblemPane from "@/components/problem/ProblemPane";
 import EditorPane from "@/components/problem/EditorPane";
 import ResultPane from "@/components/problem/ResultPane";
 import NotesPane from "@/components/problem/NotesPane";
+import AIPane from "@/components/problem/AIPane";
 import WorkspacePanel from "@/components/problem/WorkspacePanel";
 import WorkspaceSplitLayout from "@/components/problem/WorkspaceSplitLayout";
 import { useWorkspaceLayout } from "@/lib/hooks/useWorkspaceLayout";
@@ -58,6 +59,8 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
           return <ProblemPane problem={problem} />;
         case "submissions":
           return <SubmissionTab />;
+        case "ai":
+          return <AIPane problem={problem} />;
         case "editor":
           return <EditorPane />;
         case "results":

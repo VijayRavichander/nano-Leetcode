@@ -7,7 +7,13 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 
-export type TabId = "question" | "submissions" | "editor" | "results" | "notes";
+export type TabId =
+  | "question"
+  | "submissions"
+  | "ai"
+  | "editor"
+  | "results"
+  | "notes";
 export type PanelId = "left" | "topRight" | "bottomRight";
 
 export interface PanelLayout {
@@ -37,10 +43,17 @@ interface PanelState {
   focusTab: (tabId: TabId) => void;
 }
 
-const ALL_TABS: TabId[] = ["question", "submissions", "editor", "results", "notes"];
+const ALL_TABS: TabId[] = [
+  "question",
+  "submissions",
+  "ai",
+  "editor",
+  "results",
+  "notes",
+];
 
 const DEFAULT_LAYOUT: PanelLayout = {
-  left: ["question", "submissions", "notes"],
+  left: ["question", "submissions", "ai", "notes"],
   topRight: ["editor"],
   bottomRight: ["results"],
 };
@@ -215,6 +228,7 @@ export const usePanelStore = create<PanelState>()(
 export const TAB_LABELS: Record<TabId, string> = {
   question: "Question",
   submissions: "Submissions",
+  ai: "AI",
   editor: "Editor",
   results: "Results",
   notes: "Notes",

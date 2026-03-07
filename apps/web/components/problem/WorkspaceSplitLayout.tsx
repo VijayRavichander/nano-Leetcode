@@ -24,7 +24,14 @@ interface WorkspaceSplitLayoutProps {
 
 type DragAxis = "vertical" | "horizontal" | null;
 
-const MOBILE_TABS: TabId[] = ["question", "submissions", "editor", "results", "notes"];
+const MOBILE_TABS: TabId[] = [
+  "question",
+  "submissions",
+  "ai",
+  "editor",
+  "results",
+  "notes",
+];
 
 const HORIZONTAL_HANDLE_HEIGHT_PX = 8;
 const MIN_EDITOR_HEIGHT_PX = 180;
