@@ -7,7 +7,7 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 
-export type TabId = "question" | "editor" | "results" | "notes";
+export type TabId = "question" | "submissions" | "editor" | "results" | "notes";
 export type PanelId = "left" | "topRight" | "bottomRight";
 
 export interface PanelLayout {
@@ -22,18 +22,25 @@ export interface ActiveTabs {
   bottomRight: TabId | null;
 }
 
+export const ALL_PANELS: PanelId[] = ["left", "topRight", "bottomRight"];
+
 interface PanelState {
   layout: PanelLayout;
   activeTabs: ActiveTabs;
-  moveTab: (tabId: TabId, fromPanel: PanelId, toPanel: PanelId) => void;
+  moveTab: (
+    tabId: TabId,
+    fromPanel: PanelId,
+    toPanel: PanelId,
+    targetIndex?: number
+  ) => void;
   setActiveTab: (panelId: PanelId, tabId: TabId) => void;
-  resetPanelLayout: () => void;
+  focusTab: (tabId: TabId) => void;
 }
 
-const ALL_TABS: TabId[] = ["question", "editor", "results", "notes"];
+const ALL_TABS: TabId[] = ["question", "submissions", "editor", "results", "notes"];
 
 const DEFAULT_LAYOUT: PanelLayout = {
-  left: ["question", "notes"],
+  left: ["question", "submissions", "notes"],
   topRight: ["editor"],
   bottomRight: ["results"],
 };
@@ -79,36 +86,85 @@ function ensureAllTabs(layout: PanelLayout): PanelLayout {
   };
 }
 
+const clampIndex = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
 export const usePanelStore = create<PanelState>()(
   persist(
     (set) => ({
       layout: { ...DEFAULT_LAYOUT },
       activeTabs: { ...DEFAULT_ACTIVE },
 
-      moveTab: (tabId, fromPanel, toPanel) => {
-        if (fromPanel === toPanel) return;
-
+      moveTab: (tabId, fromPanel, toPanel, targetIndex) => {
         set((state) => {
-          if (state.layout[fromPanel].length <= 1) return state;
-
           const newLayout: PanelLayout = {
             left: [...state.layout.left],
             topRight: [...state.layout.topRight],
             bottomRight: [...state.layout.bottomRight],
           };
 
-          newLayout[fromPanel] = newLayout[fromPanel].filter(
+          const sourceTabs = newLayout[fromPanel];
+          const destinationTabs = newLayout[toPanel];
+          const sourceIndex = sourceTabs.indexOf(tabId);
+
+          if (sourceIndex === -1) {
+            return state;
+          }
+
+          if (fromPanel === toPanel) {
+            if (sourceTabs.length <= 1) {
+              return state;
+            }
+
+            const droppedIndex = clampIndex(
+              targetIndex ?? sourceTabs.length,
+              0,
+              sourceTabs.length
+            );
+            const adjustedIndex =
+              droppedIndex > sourceIndex ? droppedIndex - 1 : droppedIndex;
+            const reorderedTabs = sourceTabs.filter((id) => id !== tabId);
+            const insertionIndex = clampIndex(
+              adjustedIndex,
+              0,
+              reorderedTabs.length
+            );
+            reorderedTabs.splice(insertionIndex, 0, tabId);
+
+            if (reorderedTabs.every((id, index) => id === sourceTabs[index])) {
+              return state;
+            }
+
+            newLayout[fromPanel] = reorderedTabs;
+
+            return {
+              layout: newLayout,
+              activeTabs: { ...state.activeTabs, [fromPanel]: tabId },
+            };
+          }
+
+          if (sourceTabs.length <= 1) {
+            return state;
+          }
+
+          const sourceWithoutTab = sourceTabs.filter((id) => id !== tabId);
+          const destinationWithoutTab = destinationTabs.filter(
             (id) => id !== tabId
           );
+          const insertionIndex = clampIndex(
+            targetIndex ?? destinationWithoutTab.length,
+            0,
+            destinationWithoutTab.length
+          );
+          destinationWithoutTab.splice(insertionIndex, 0, tabId);
 
-          if (!newLayout[toPanel].includes(tabId)) {
-            newLayout[toPanel] = [...newLayout[toPanel], tabId];
-          }
+          newLayout[fromPanel] = sourceWithoutTab;
+          newLayout[toPanel] = destinationWithoutTab;
 
           const newActiveTabs: ActiveTabs = { ...state.activeTabs };
 
           if (newActiveTabs[fromPanel] === tabId) {
-            newActiveTabs[fromPanel] = newLayout[fromPanel][0] ?? null;
+            newActiveTabs[fromPanel] = sourceWithoutTab[0] ?? null;
           }
 
           newActiveTabs[toPanel] = tabId;
@@ -123,12 +179,22 @@ export const usePanelStore = create<PanelState>()(
         }));
       },
 
-      resetPanelLayout: () => {
-        set({
-          layout: { ...DEFAULT_LAYOUT },
-          activeTabs: { ...DEFAULT_ACTIVE },
+      focusTab: (tabId) => {
+        set((state) => {
+          const targetPanel = ALL_PANELS.find((panelId) =>
+            state.layout[panelId].includes(tabId)
+          );
+
+          if (!targetPanel) {
+            return state;
+          }
+
+          return {
+            activeTabs: { ...state.activeTabs, [targetPanel]: tabId },
+          };
         });
       },
+
     }),
     {
       name: "litecode:panel-layout:v1",
@@ -148,15 +214,8 @@ export const usePanelStore = create<PanelState>()(
 
 export const TAB_LABELS: Record<TabId, string> = {
   question: "Question",
+  submissions: "Submissions",
   editor: "Editor",
   results: "Results",
   notes: "Notes",
 };
-
-export const PANEL_LABELS: Record<PanelId, string> = {
-  left: "Left",
-  topRight: "Top Right",
-  bottomRight: "Bottom Right",
-};
-
-export const ALL_PANELS: PanelId[] = ["left", "topRight", "bottomRight"];

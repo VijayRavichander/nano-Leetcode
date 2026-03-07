@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "../ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2, Trophy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSubmissionsPage } from "@/lib/api/submission";
 import { useCodeStore, useCurrentSlug } from "@/lib/store/codeStore";
@@ -14,11 +13,10 @@ const PAGE_SIZE = 5;
 
 interface SubmissionTabProps {
   sidebarWidth?: number;
-  onBack?: () => void;
   className?: string;
 }
 
-const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) => {
+const SubmissionTab = ({ sidebarWidth, className }: SubmissionTabProps) => {
   const problemId = useProblemUIStore((state) => state.problemId);
 
   const setCodeForSlug = useCodeStore((state) => state.setCodeForSlug);
@@ -131,16 +129,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
         style={widthStyle}
       >
         <div className="mb-4 flex items-center">
-          {onBack ? (
-            <Button
-              className="app-text-action app-text-action-muted h-auto px-0 py-0 shadow-none"
-              onClick={onBack}
-            >
-              <ArrowLeft />
-              Back
-            </Button>
-          ) : null}
-          <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Submissions</span>
+          <span className="text-sm font-semibold text-[var(--app-text)]">Submissions</span>
         </div>
         <div className="flex items-center justify-center">
           <Loader2 className="animate-spin text-[var(--app-accent)]" />
@@ -156,16 +145,7 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
       style={widthStyle}
     >
       <div className="mb-4 flex items-center">
-        {onBack ? (
-          <Button
-            className="app-text-action app-text-action-muted h-auto px-0 py-0 shadow-none"
-            onClick={onBack}
-          >
-            <ArrowLeft />
-            Back
-          </Button>
-        ) : null}
-        <span className="px-3 text-sm font-semibold text-[var(--app-text)]">Submissions</span>
+        <span className="text-sm font-semibold text-[var(--app-text)]">Submissions</span>
       </div>
       <div className="flex-1">
         <div className="mx-auto w-full">
@@ -200,6 +180,14 @@ const SubmissionTab = ({ sidebarWidth, onBack, className }: SubmissionTabProps) 
               You&apos;ve reached the end
             </div>
           ) : null}
+
+          <div className="mt-6 border-t border-[var(--app-border)] pt-4">
+            <h2 className="mb-3 text-sm font-semibold text-[var(--app-text)]">Leaderboard</h2>
+            <div className="app-empty-state flex min-h-28 items-center justify-center rounded-lg px-3 py-6 text-sm">
+              <Trophy className="mr-2 h-4 w-4" />
+              Leaderboard will be available here.
+            </div>
+          </div>
         </div>
       </div>
       <SubmissionDetailsModal

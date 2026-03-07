@@ -4,6 +4,7 @@ import { type PanelId, usePanelStore } from "@/lib/store/panelStore";
 import { RotateCcw } from "lucide-react";
 import PanelTabBar from "./PanelTabBar";
 import ProblemPane from "./ProblemPane";
+import SubmissionTab from "@/components/submission/SubmissionTab";
 import EditorPane from "./EditorPane";
 import ResultPane from "./ResultPane";
 import NotesPane from "./NotesPane";
@@ -68,6 +69,7 @@ const WorkspacePanel = ({ panelId, problem }: WorkspacePanelProps) => {
       <PanelTabBar panelId={panelId} extraControls={extraControls} />
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === "question" && <ProblemPane problem={problem} />}
+        {activeTab === "submissions" && <SubmissionTab />}
         {activeTab === "editor" && <EditorPane />}
         {activeTab === "results" && <ResultPane problem={problem} />}
         {activeTab === "notes" && <NotesPane />}

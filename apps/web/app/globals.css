@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, .stealth *));
 
 :root {
   --background: oklch(1 0 0);
@@ -48,6 +48,12 @@
   --landing-accent-blue: #cfd8ff;
   --landing-accent-blue-strong: #6f86ff;
   --landing-accent-red: #e26a5a;
+  --landing-accent-foreground: #ffffff;
+  --landing-demo-dot-1: #f2b6a8;
+  --landing-demo-dot-2: #e7d290;
+  --landing-demo-dot-3: #a9d3a6;
+  --landing-shape-from: rgba(95, 114, 222, 0.11);
+  --landing-shape-to: rgba(95, 114, 222, 0.05);
   --landing-link: #171717;
   --landing-shadow: 0 6px 18px rgba(23, 23, 23, 0.04);
   --landing-shadow-strong: 0 10px 30px rgba(23, 23, 23, 0.08);
@@ -72,6 +78,11 @@
   --app-danger-text: #9f4f45;
   --app-shadow: 0 6px 18px rgba(23, 23, 23, 0.05);
   --app-shadow-strong: 0 14px 34px rgba(23, 23, 23, 0.08);
+  --app-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  --app-popover-bg: var(--app-panel);
+  --app-popover-border: var(--app-border);
+  --app-popover-shadow: var(--app-shadow-strong);
+  --app-editor-border: var(--app-border);
   --heatmap-empty: #e8e3da;
   --heatmap-l1: #d6daf3;
   --heatmap-l2: #adb3e6;
@@ -124,6 +135,12 @@
   --landing-accent-blue: #2b3557;
   --landing-accent-blue-strong: #9aaeff;
   --landing-accent-red: #d48679;
+  --landing-accent-foreground: #ffffff;
+  --landing-demo-dot-1: #d48679;
+  --landing-demo-dot-2: #d7c07b;
+  --landing-demo-dot-3: #a7d2b0;
+  --landing-shape-from: rgba(154, 174, 255, 0.14);
+  --landing-shape-to: rgba(154, 174, 255, 0.05);
   --landing-link: #f3efe6;
   --landing-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
   --landing-shadow-strong: 0 14px 34px rgba(0, 0, 0, 0.3);
@@ -147,11 +164,104 @@
   --app-danger-text: #e0a39b;
   --app-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
   --app-shadow-strong: 0 14px 34px rgba(0, 0, 0, 0.3);
+  --app-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  --app-popover-bg: var(--app-panel);
+  --app-popover-border: var(--app-border);
+  --app-popover-shadow: var(--app-shadow-strong);
+  --app-editor-border: var(--app-border);
   --heatmap-empty: #1e2330;
   --heatmap-l1: #282e4a;
   --heatmap-l2: #3f4878;
   --heatmap-l3: #6373c7;
   --heatmap-l4: #9aaeff;
+}
+
+.stealth {
+  --background: #000000;
+  --foreground: #f5f5f5;
+  --card: #040404;
+  --card-foreground: #f5f5f5;
+  --popover: #040404;
+  --popover-foreground: #f5f5f5;
+  --primary: #7ec8ff;
+  --primary-foreground: #000000;
+  --secondary: #050505;
+  --secondary-foreground: #f5f5f5;
+  --muted: #050505;
+  --muted-foreground: rgba(245, 245, 245, 0.62);
+  --accent: #080808;
+  --accent-foreground: #f5f5f5;
+  --destructive: #ff4d57;
+  --destructive-foreground: #f5f5f5;
+  --border: #0d0d0d;
+  --input: #050505;
+  --ring: #7ec8ff;
+  --chart-1: #7ec8ff;
+  --chart-2: #f3c6d8;
+  --chart-3: #ff4d57;
+  --chart-4: #9dd8ff;
+  --chart-5: #c9e8ff;
+  --sidebar: #040404;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #7ec8ff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #050505;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: #0d0d0d;
+  --sidebar-ring: #7ec8ff;
+  --landing-bg: #000000;
+  --landing-chrome-bg: #020202;
+  --landing-footer-bg: #010101;
+  --landing-surface: #030303;
+  --landing-surface-strong: #040404;
+  --landing-hover-surface: #060606;
+  --landing-text: #f5f5f5;
+  --landing-muted: rgba(245, 245, 245, 0.62);
+  --landing-border: #0d0d0d;
+  --landing-accent-blue: #060606;
+  --landing-accent-blue-strong: #7ec8ff;
+  --landing-accent-red: #ff4d57;
+  --landing-accent-foreground: #000000;
+  --landing-demo-dot-1: #ff4d57;
+  --landing-demo-dot-2: #f3c6d8;
+  --landing-demo-dot-3: #7ec8ff;
+  --landing-shape-from: rgba(126, 200, 255, 0.08);
+  --landing-shape-to: rgba(243, 198, 216, 0.04);
+  --landing-link: #f5f5f5;
+  --landing-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --landing-shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.55);
+  --landing-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --app-bg: #000000;
+  --app-chrome: #020202;
+  --app-footer: #010101;
+  --app-surface: #030303;
+  --app-panel: #040404;
+  --app-panel-muted: #060606;
+  --app-text: #f5f5f5;
+  --app-muted: rgba(245, 245, 245, 0.62);
+  --app-border: #0d0d0d;
+  --app-accent: #7ec8ff;
+  --app-accent-soft: #080808;
+  --app-success-bg: #060606;
+  --app-success-text: #7ec8ff;
+  --app-warning-bg: #060606;
+  --app-warning-text: #f3c6d8;
+  --app-danger-bg: #060606;
+  --app-danger-text: #ff4d57;
+  --app-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --app-shadow-strong: 0 20px 42px rgba(0, 0, 0, 0.6);
+  --app-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --app-popover-bg: #0b0b0b;
+  --app-popover-border: #202020;
+  --app-popover-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.78),
+    0 0 0 1px rgba(245, 245, 245, 0.06);
+  --app-editor-border: #242424;
+  --heatmap-empty: #121212;
+  --heatmap-l1: #1a1a1a;
+  --heatmap-l2: #242424;
+  --heatmap-l3: #304656;
+  --heatmap-l4: #7ec8ff;
 }
 
 @theme inline {
@@ -531,7 +641,7 @@
 
 .shape {
   position: absolute;
-  background: linear-gradient(45deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05));
+  background: linear-gradient(45deg, var(--landing-shape-from), var(--landing-shape-to));
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   filter: blur(2px);
 }

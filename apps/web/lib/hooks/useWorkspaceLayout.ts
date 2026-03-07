@@ -98,18 +98,13 @@ export const useWorkspaceLayout = (): WorkspaceLayoutState &
     }));
   }, []);
 
-  const resetLayout = useCallback(() => {
-    setLayout(DEFAULT_LAYOUT);
-  }, []);
-
   return useMemo(
     () => ({
       leftPaneRatio: layout.leftPaneRatio,
       topRightRatio: layout.topRightRatio,
       setLeftPaneRatio,
       setTopRightRatio,
-      resetLayout,
     }),
-    [layout.leftPaneRatio, layout.topRightRatio, setLeftPaneRatio, setTopRightRatio, resetLayout]
+    [layout.leftPaneRatio, layout.topRightRatio, setLeftPaneRatio, setTopRightRatio]
   );
 };

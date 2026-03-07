@@ -41,7 +41,7 @@ const Footer = () => {
   return (
     <footer
       className="border-t border-[var(--app-border)] bg-[var(--app-footer)]"
-      style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.02) inset" }}
+      style={{ boxShadow: "var(--app-chrome-shadow)" }}
     >
       <div className="app-container py-6">
         <div className="flex flex-col gap-3 text-sm text-[var(--app-muted)] md:flex-row md:items-center md:justify-between">

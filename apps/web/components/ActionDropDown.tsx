@@ -56,14 +56,7 @@ const NavbarActionDropDown = ({
             ? "cursor-pointer text-sm font-medium tracking-[0.08em] text-[var(--landing-link)] transition-colors hover:text-[var(--landing-accent-blue-strong)] focus:outline-none"
             : isApp
               ? "cursor-pointer text-sm font-medium tracking-[0.08em] text-[var(--app-text)] transition-colors hover:text-[var(--app-accent)] focus:outline-none"
-            : `
-          cursor-pointer rounded-md
-          bg-neutral-950 px-2 text-xs! text-white/90
-          transition-all hover:bg-linear-to-b hover:text-white
-          to-neutral-900 from-neutral-800
-          focus:outline-none
-          data-[state=open]:scale-[1.01]
-        `
+            : "cursor-pointer rounded-md bg-[var(--app-panel-muted)] px-2 text-xs text-[var(--app-text)] transition-colors hover:text-[var(--app-accent)] focus:outline-none data-[state=open]:scale-[1.01]"
         }
       >
         {initials}
@@ -73,8 +66,8 @@ const NavbarActionDropDown = ({
           isLanding
             ? "w-44 border border-[var(--landing-border)] bg-[var(--landing-surface)] p-1 text-sm text-[var(--landing-text)] shadow-[var(--landing-shadow-strong)]"
             : isApp
-              ? "w-44 border border-[var(--app-border)] bg-[var(--app-panel)] p-1 text-sm text-[var(--app-text)] shadow-[var(--app-shadow-strong)]"
-            : "cursor-pointer border border-white/10 bg-neutral-900 font-sm text-white/90"
+              ? "w-44 border border-[var(--app-popover-border)] bg-[var(--app-popover-bg)] p-1 text-sm text-[var(--app-text)] shadow-[var(--app-popover-shadow)]"
+            : "w-44 border border-[var(--app-popover-border)] bg-[var(--app-popover-bg)] p-1 text-sm text-[var(--app-text)] shadow-[var(--app-popover-shadow)]"
         }
       >
         <DropdownMenuItem
@@ -83,7 +76,7 @@ const NavbarActionDropDown = ({
               ? "text-[var(--landing-text)] focus:bg-transparent focus:text-[var(--landing-accent-blue-strong)]"
               : isApp
                 ? "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
-              : "hover:bg-white/90!"
+                : "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
           }
           onClick={() => router.push("/profile")}
         >
@@ -96,7 +89,7 @@ const NavbarActionDropDown = ({
                 ? "text-[var(--landing-text)] focus:bg-transparent focus:text-[var(--landing-accent-blue-strong)]"
                 : isApp
                   ? "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
-                  : "hover:bg-white/90!"
+                  : "text-[var(--app-text)] focus:bg-transparent focus:text-[var(--app-accent)]"
             }
             onClick={handleSignOut}
           >

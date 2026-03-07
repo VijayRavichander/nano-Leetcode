@@ -18,7 +18,7 @@ import {
   useLangStore,
   type SupportedLanguage,
 } from "@/lib/store/codeStore";
-import { useProblemUIStore } from "@/lib/store/uiStore";
+import { usePanelStore } from "@/lib/store/panelStore";
 import { useAppSession } from "@/lib/auth/client-session";
 import NavbarActionDropDown from "./ActionDropDown";
 import ThemeToggle from "./ThemeToggle";
@@ -30,6 +30,22 @@ interface NavBarProps {
   workspace?: boolean;
 }
 
+const getThemeConfettiColors = () => {
+  const fallback = ["#60A5FA", "#F3C6D8", "#FF4D57"];
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const styles = getComputedStyle(document.documentElement);
+  const colors = [
+    styles.getPropertyValue("--app-accent").trim(),
+    styles.getPropertyValue("--app-warning-text").trim(),
+    styles.getPropertyValue("--app-danger-text").trim(),
+  ].filter(Boolean);
+
+  return colors.length === 3 ? colors : fallback;
+};
+
 const NavBar = ({ workspace = false }: NavBarProps) => {
   const codeInEditor = useCurrentCode();
   const selectedLanguage = useLangStore((state) => state.lang);
@@ -37,7 +53,7 @@ const NavBar = ({ workspace = false }: NavBarProps) => {
 
   const setTestStatus = useExecutionStore((state) => state.setTestCaseStatus);
   const problemSlug = useCurrentSlug();
-  const setTab = useProblemUIStore((state) => state.setTab);
+  const focusTab = usePanelStore((state) => state.focusTab);
 
   const isRunning = useExecutionStore((state) => state.isRunning);
   const setIsRunning = useExecutionStore((state) => state.setIsRunning);
@@ -128,11 +144,11 @@ const NavBar = ({ workspace = false }: NavBarProps) => {
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#60A5FA", "#34D399", "#818CF8"],
+        colors: getThemeConfettiColors(),
       });
     }
 
-    setTab("submissions");
+    focusTab("submissions");
     setIsSubmitting(false);
   };
 
@@ -259,7 +275,7 @@ const NavBar = ({ workspace = false }: NavBarProps) => {
   return (
     <header
       className="border-b border-[var(--app-border)] bg-[var(--app-chrome)] text-[var(--app-text)]"
-      style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.02) inset" }}
+      style={{ boxShadow: "var(--app-chrome-shadow)" }}
     >
       <div className="app-container">
         <div className="flex items-center justify-between gap-4 py-4 md:py-5">

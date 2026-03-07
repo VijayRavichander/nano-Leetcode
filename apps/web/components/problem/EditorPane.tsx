@@ -15,6 +15,12 @@ const EditorPane = () => {
   const currentSlug = useCurrentSlug();
   const language = useLangStore((state) => state.lang);
   const { resolvedTheme } = useTheme();
+  const editorTheme =
+    resolvedTheme === "stealth"
+      ? "litecode-stealth"
+      : resolvedTheme === "dark"
+        ? "litecode-dark"
+        : "litecode-light";
 
   const setCodeForSlug = useCodeStore((state) => state.setCodeForSlug);
 
@@ -25,7 +31,7 @@ const EditorPane = () => {
           height="100%"
           defaultLanguage={language}
           beforeMount={registerLiteCodeMonacoThemes}
-          theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
+          theme={editorTheme}
           value={currentCode}
           onChange={(value) => {
             if (!currentSlug || value === undefined) {

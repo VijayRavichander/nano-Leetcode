@@ -27,7 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${landingBodyFont.variable} ${landingSerifFont.variable}`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          themes={["light", "dark", "stealth"]}
+          disableTransitionOnChange
+        >
           {children}
         </ThemeProvider>
       </body>

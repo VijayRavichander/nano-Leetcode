@@ -91,6 +91,12 @@ export default function AddProblemPage() {
   const [problemHint, setProblemHint] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { resolvedTheme } = useTheme();
+  const editorTheme =
+    resolvedTheme === "stealth"
+      ? "litecode-stealth"
+      : resolvedTheme === "dark"
+        ? "litecode-dark"
+        : "litecode-light";
 
   const slugFromTitle = useMemo(() => {
     if (!form.title.trim()) return "";
@@ -677,11 +683,11 @@ export default function AddProblemPage() {
                   <Trash2Icon className="size-4" /> Remove
                 </Button>
               </div>
-              <div className="overflow-hidden rounded-md border border-[var(--app-border)]">
+              <div className="overflow-hidden rounded-md border border-[var(--app-editor-border)]">
                 <Editor
                   height="220px"
                   beforeMount={registerLiteCodeMonacoThemes}
-                  theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
+                  theme={editorTheme}
                   defaultLanguage={fc.language}
                   value={fc.code}
                   onChange={(val) => updateArrayItem("functionCode", i, { code: val || "" })}
@@ -734,11 +740,11 @@ export default function AddProblemPage() {
                   <Trash2Icon className="size-4" /> Remove
                 </Button>
               </div>
-              <div className="overflow-hidden rounded-md border border-[var(--app-border)]">
+              <div className="overflow-hidden rounded-md border border-[var(--app-editor-border)]">
                 <Editor
                   height="220px"
                   beforeMount={registerLiteCodeMonacoThemes}
-                  theme={resolvedTheme === "dark" ? "litecode-dark" : "litecode-light"}
+                  theme={editorTheme}
                   defaultLanguage={fc.language}
                   value={fc.code}
                   onChange={(val) => updateArrayItem("completeCode", i, { code: val || "" })}

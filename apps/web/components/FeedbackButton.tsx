@@ -175,7 +175,7 @@ export function FeedbackButton() {
                 </div>
 
                 {error ? (
-                  <p className="mt-3 text-xs text-red-500" role="alert">
+                  <p className="mt-3 text-xs text-[var(--landing-accent-red)]" role="alert">
                     {error}
                   </p>
                 ) : null}
@@ -195,7 +195,7 @@ export function FeedbackButton() {
                   <button
                     onClick={handleSubmit}
                     disabled={!feedback.trim() || isSubmitting}
-                    className="flex items-center gap-1.5 rounded-lg bg-[var(--landing-accent-blue-strong)] px-3 py-1.5 text-sm font-medium text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-lg bg-[var(--landing-accent-blue-strong)] px-3 py-1.5 text-sm font-medium text-[var(--landing-accent-foreground)] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <svg

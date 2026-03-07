@@ -40,9 +40,9 @@ export default function Home() {
           <div className="landing-proof mt-8 overflow-hidden p-3 md:p-4">
             <div className="rounded-[10px] border border-[var(--landing-border)] bg-[var(--landing-surface-strong)]">
               <div className="flex items-center gap-1.5 border-b border-[var(--landing-border)] px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#f2b6a8]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#e7d290]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#a9d3a6]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--landing-demo-dot-1)]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--landing-demo-dot-2)]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--landing-demo-dot-3)]" />
                 <span className="ml-4 text-xs text-[var(--landing-muted)]">litecode.app/problem</span>
               </div>
 

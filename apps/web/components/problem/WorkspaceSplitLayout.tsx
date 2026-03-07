@@ -24,7 +24,7 @@ interface WorkspaceSplitLayoutProps {
 
 type DragAxis = "vertical" | "horizontal" | null;
 
-const MOBILE_TABS: TabId[] = ["question", "editor", "results", "notes"];
+const MOBILE_TABS: TabId[] = ["question", "submissions", "editor", "results", "notes"];
 
 const HORIZONTAL_HANDLE_HEIGHT_PX = 8;
 const MIN_EDITOR_HEIGHT_PX = 180;
@@ -228,7 +228,7 @@ const WorkspaceSplitLayout = ({
         ref={containerRef}
       >
         <div
-          className="flex min-h-0 min-w-0 flex-col overflow-hidden border-r border-[var(--app-border)] bg-[var(--app-panel)]"
+          className="flex min-h-0 min-w-0 flex-col overflow-hidden border-r border-[var(--app-editor-border)] bg-[var(--app-panel)]"
           style={desktopPaneStyle.left}
         >
           {leftPanel}
@@ -268,7 +268,7 @@ const WorkspaceSplitLayout = ({
             isActive={dragAxis === "horizontal"}
           />
 
-          <div className="min-h-0 flex-1 overflow-hidden border-t border-[var(--app-border)]">
+          <div className="min-h-0 flex-1 overflow-hidden border-t border-[var(--app-editor-border)]">
             {bottomRightPanel}
           </div>
         </div>
@@ -276,7 +276,7 @@ const WorkspaceSplitLayout = ({
 
       {/* Mobile layout */}
       <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)] md:hidden">
-        <div className="flex gap-3 border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3 py-1.5">
+        <div className="flex gap-3 border-b border-[var(--app-editor-border)] bg-[var(--app-chrome)] px-3 py-1.5">
           {MOBILE_TABS.map((tabId) => (
             <button
               key={tabId}

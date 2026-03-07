@@ -11,7 +11,7 @@ const ResultPane = ({ problem }: ResultPaneProps) => {
 
   return (
     <section data-results-pane-root className="flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="flex h-11 items-center border-b border-[var(--app-border)] bg-[var(--app-chrome)] px-3.5">
+      <header className="flex h-11 items-center border-b border-[var(--app-editor-border)] bg-[var(--app-chrome)] px-3.5">
         <h2 className="text-sm font-medium text-[var(--app-muted)]">
           Results
         </h2>
