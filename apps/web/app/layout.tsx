@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Serif, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const landingBodyFont = Inter({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
+const landingBodyFont = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-landing-body",
-});
-
-const landingSerifFont = IBM_Plex_Serif({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-  variable: "--font-landing-serif",
 });
 
 export const metadata: Metadata = {
@@ -26,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${landingBodyFont.variable} ${landingSerifFont.variable}`}>
+      <body className={landingBodyFont.variable}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

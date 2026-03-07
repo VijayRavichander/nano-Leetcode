@@ -2,6 +2,8 @@ import Problems from "@/components/Problems";
 import { db } from "@repo/db";
 import type { ProblemListItem } from "@/lib/types/problem";
 
+export const dynamic = "force-dynamic";
+
 export default async function App() {
   const problems = await db.problem.findMany({
     where: {},

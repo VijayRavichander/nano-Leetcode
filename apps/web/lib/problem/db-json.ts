@@ -1,5 +1,3 @@
-import type { Prisma } from "@repo/db";
-
 export interface CodeTemplate {
   language: string;
   code: string;
@@ -14,10 +12,14 @@ export interface DescriptionTestCase extends SimpleTestCase {
   explanation: string;
 }
 
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+type JsonObject = { [key: string]: JsonValue };
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const isJsonObject = (value: Prisma.JsonValue): value is Prisma.JsonObject =>
+const isJsonObject = (value: unknown): value is JsonObject =>
   isObject(value);
 
 const asString = (value: unknown): string => {
@@ -27,7 +29,7 @@ const asString = (value: unknown): string => {
 };
 
 export const parseCodeTemplates = (
-  value: Prisma.JsonValue | null | undefined
+  value: unknown
 ): CodeTemplate[] => {
   if (!Array.isArray(value)) return [];
   return value.filter(isJsonObject).map((item) => ({
@@ -37,7 +39,7 @@ export const parseCodeTemplates = (
 };
 
 export const parseSimpleTestCases = (
-  value: Prisma.JsonValue | null | undefined
+  value: unknown
 ): SimpleTestCase[] => {
   if (!Array.isArray(value)) return [];
   return value.filter(isJsonObject).map((item) => ({
@@ -47,7 +49,7 @@ export const parseSimpleTestCases = (
 };
 
 export const parseDescriptionTestCases = (
-  value: Prisma.JsonValue | null | undefined
+  value: unknown
 ): DescriptionTestCase[] => {
   if (!Array.isArray(value)) return [];
   return value.filter(isJsonObject).map((item) => ({

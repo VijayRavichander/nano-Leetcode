@@ -1,9 +1,21 @@
 import { createAuthClient } from "better-auth/react";
 
-const BASE_URL = process.env.NODE_ENV === 'production' 
-  ? "https://litecode.vijayravichander.com" 
-  : "http://localhost:3000";
+const getAuthBaseUrl = () => {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
 
-export const authClient = createAuthClient({
-  baseURL: BASE_URL,
-});
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return undefined;
+};
+
+const baseURL = getAuthBaseUrl();
+
+export const authClient = createAuthClient(
+  baseURL ? { baseURL } : {}
+);

@@ -2,9 +2,15 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ProblemFormSchema } from "@/lib/schemas/problem-schema";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+
+  return new OpenAI({ apiKey });
+};
 
 const getErrorCode = (error: unknown) => {
   if (typeof error !== "object" || error === null || !("code" in error)) {
@@ -17,6 +23,7 @@ const getErrorCode = (error: unknown) => {
 
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAIClient();
     const body = await req.json();
     const { examples, problemHint } = body;
 
