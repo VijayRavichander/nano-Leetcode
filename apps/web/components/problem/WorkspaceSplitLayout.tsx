@@ -11,6 +11,7 @@ import {
 import PaneResizeHandle from "@/components/problem/PaneResizeHandle";
 import type { WorkspaceLayoutState } from "@/lib/types/workspace";
 import { type TabId, TAB_LABELS } from "@/lib/store/panelStore";
+import { TAB_ICONS } from "@/components/problem/tabMeta";
 
 interface WorkspaceSplitLayoutProps {
   layout: WorkspaceLayoutState;
@@ -26,6 +27,7 @@ type DragAxis = "vertical" | "horizontal" | null;
 
 const MOBILE_TABS: TabId[] = [
   "question",
+  "editorial",
   "submissions",
   "ai",
   "editor",
@@ -284,20 +286,25 @@ const WorkspaceSplitLayout = ({
       {/* Mobile layout */}
       <div className="flex h-full min-h-0 flex-1 flex-col bg-[var(--app-panel)] md:hidden">
         <div className="flex gap-3 border-b border-[var(--app-editor-border)] bg-[var(--app-chrome)] px-3 py-1.5">
-          {MOBILE_TABS.map((tabId) => (
-            <button
-              key={tabId}
-              type="button"
-              onClick={() => setMobileTab(tabId)}
-              className={`px-0 py-0 text-[10px] font-medium ${
-                mobileTab === tabId
-                  ? "app-text-action text-[var(--app-text)] underline"
-                  : "app-text-action app-text-action-muted"
-              }`}
-            >
-              {TAB_LABELS[tabId]}
-            </button>
-          ))}
+          {MOBILE_TABS.map((tabId) => {
+            const Icon = TAB_ICONS[tabId];
+
+            return (
+              <button
+                key={tabId}
+                type="button"
+                onClick={() => setMobileTab(tabId)}
+                className={`inline-flex items-center gap-1 px-0 py-0 text-[10px] font-medium ${
+                  mobileTab === tabId
+                    ? "app-text-action text-[var(--app-text)] underline"
+                    : "app-text-action app-text-action-muted"
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                <span>{TAB_LABELS[tabId]}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden bg-[var(--app-panel)]">

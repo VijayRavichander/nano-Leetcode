@@ -7,6 +7,7 @@ import {
   usePanelStore,
   TAB_LABELS,
 } from "@/lib/store/panelStore";
+import { TAB_ICONS } from "@/components/problem/tabMeta";
 
 interface PanelTabBarProps {
   panelId: PanelId;
@@ -21,6 +22,7 @@ interface DragPayload {
 const DRAG_MIME_TYPE = "application/x-litecode-tab";
 const VALID_TAB_IDS: TabId[] = [
   "question",
+  "editorial",
   "submissions",
   "ai",
   "editor",
@@ -143,6 +145,7 @@ const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
           const isDraggable = tabs.length > 1;
           const isActive = activeTab === tabId;
           const isDragging = draggingTabId === tabId;
+          const Icon = TAB_ICONS[tabId];
 
           return (
             <div
@@ -196,7 +199,7 @@ const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
                   setDropIndex(null);
                 }}
                 onClick={() => setActiveTab(panelId, tabId)}
-                className={`relative px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                className={`relative inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
                   isActive
                     ? "text-[var(--app-text)]"
                     : "text-[var(--app-muted)] hover:text-[var(--app-text)]"
@@ -204,7 +207,8 @@ const PanelTabBar = ({ panelId, extraControls }: PanelTabBarProps) => {
                   isDragging ? "opacity-45" : ""
                 }`}
               >
-                {TAB_LABELS[tabId]}
+                <Icon className="h-3 w-3" />
+                <span>{TAB_LABELS[tabId]}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-1/2 h-[1.5px] w-[60%] -translate-x-1/2 bg-[var(--app-text)]" />
                 )}

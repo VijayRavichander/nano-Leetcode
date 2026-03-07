@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import SubmissionTab from "@/components/submission/SubmissionTab";
 import ProblemPane from "@/components/problem/ProblemPane";
+import EditorialPane from "@/components/problem/EditorialPane";
 import EditorPane from "@/components/problem/EditorPane";
 import ResultPane from "@/components/problem/ResultPane";
 import NotesPane from "@/components/problem/NotesPane";
@@ -57,6 +58,8 @@ const ProblemWorkspace = ({ problem, problemSlug }: ProblemWorkspaceProps) => {
       switch (tabId) {
         case "question":
           return <ProblemPane problem={problem} />;
+        case "editorial":
+          return <EditorialPane problem={problem} />;
         case "submissions":
           return <SubmissionTab />;
         case "ai":

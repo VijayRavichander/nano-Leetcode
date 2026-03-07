@@ -9,6 +9,7 @@ import {
 
 export type TabId =
   | "question"
+  | "editorial"
   | "submissions"
   | "ai"
   | "editor"
@@ -45,6 +46,7 @@ interface PanelState {
 
 const ALL_TABS: TabId[] = [
   "question",
+  "editorial",
   "submissions",
   "ai",
   "editor",
@@ -53,7 +55,7 @@ const ALL_TABS: TabId[] = [
 ];
 
 const DEFAULT_LAYOUT: PanelLayout = {
-  left: ["question", "submissions", "ai", "notes"],
+  left: ["question", "editorial", "submissions", "ai", "notes"],
   topRight: ["editor"],
   bottomRight: ["results"],
 };
@@ -227,6 +229,7 @@ export const usePanelStore = create<PanelState>()(
 
 export const TAB_LABELS: Record<TabId, string> = {
   question: "Question",
+  editorial: "Editorial",
   submissions: "Submissions",
   ai: "AI",
   editor: "Editor",

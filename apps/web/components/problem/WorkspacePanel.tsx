@@ -9,6 +9,7 @@ import EditorPane from "./EditorPane";
 import ResultPane from "./ResultPane";
 import NotesPane from "./NotesPane";
 import AIPane from "./AIPane";
+import EditorialPane from "./EditorialPane";
 import {
   useCodeStore,
   useCurrentSlug,
@@ -70,6 +71,7 @@ const WorkspacePanel = ({ panelId, problem }: WorkspacePanelProps) => {
       <PanelTabBar panelId={panelId} extraControls={extraControls} />
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === "question" && <ProblemPane problem={problem} />}
+        {activeTab === "editorial" && <EditorialPane problem={problem} />}
         {activeTab === "submissions" && <SubmissionTab />}
         {activeTab === "ai" && <AIPane problem={problem} />}
         {activeTab === "editor" && <EditorPane />}
