@@ -1,4 +1,4 @@
-import { db, type Session, type User } from "@repo/db";
+import { db } from "@repo/db";
 import type { NextRequest } from "next/server";
 
 export const DEV_AUTH_USER_ID = "00000000-0000-4000-8000-000000000001";
@@ -7,9 +7,23 @@ const DEV_AUTH_BYPASS_FLAG = "true";
 const DEV_AUTH_DEFAULT_NAME = "Local Dev";
 const DEV_AUTH_DEFAULT_EMAIL = "dev@litecode.local";
 
+type DevAuthUser = Awaited<ReturnType<typeof ensureDevAuthUser>>;
+
+type DevAuthSession = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt: Date;
+  impersonatedBy: string | null;
+  ipAddress: string | null;
+  token: string;
+  userAgent: string | null;
+  userId: string;
+};
+
 export type AppSession = {
-  session: Session;
-  user: User;
+  session: DevAuthSession;
+  user: DevAuthUser;
 };
 
 export function isDevAuthBypassEnabled() {
@@ -51,7 +65,7 @@ export async function ensureDevAuthUser() {
   });
 }
 
-export function buildDevSession(user: User, req?: NextRequest): AppSession {
+export function buildDevSession(user: DevAuthUser, req?: NextRequest): AppSession {
   const now = new Date();
 
   return {
