@@ -1,7 +1,8 @@
 "use client";
 
-import { Loader2, Trophy } from "lucide-react";
+import { History, Loader2, Lock, Trophy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import AppEmptyState from "@/components/AppEmptyState";
 import { getSubmissionsPage } from "@/lib/api/submission";
 import { useCodeStore, useCurrentSlug } from "@/lib/store/codeStore";
 import { useProblemUIStore } from "@/lib/store/uiStore";
@@ -164,9 +165,18 @@ const SubmissionTab = ({ sidebarWidth, className }: SubmissionTabProps) => {
               ))}
             </div>
           ) : (
-            <div className="text-center font-normal text-[var(--app-muted)]">
-              {authError ? "Please log in first" : "No Earlier Submissions"}
-            </div>
+            <AppEmptyState
+              icon={authError ? Lock : History}
+              title={authError ? "Sign in to view your submissions." : "No submissions yet."}
+              description={
+                authError
+                  ? "Keep your submission history in sync by signing in before you start practicing."
+                  : "Run your code, then submit when you are ready. Your recent work will show up here."
+              }
+              actionLabel={authError ? "Sign in" : undefined}
+              actionHref={authError ? "/signin" : undefined}
+              className="min-h-44"
+            />
           )}
           <div ref={loadMoreRef} className="h-1" />
           {isFetching && submissionsList.length > 0 ? (
@@ -183,10 +193,12 @@ const SubmissionTab = ({ sidebarWidth, className }: SubmissionTabProps) => {
 
           <div className="mt-6 border-t border-[var(--app-border)] pt-4">
             <h2 className="mb-3 text-sm font-semibold text-[var(--app-text)]">Leaderboard</h2>
-            <div className="app-empty-state flex min-h-28 items-center justify-center rounded-lg px-3 py-6 text-sm">
-              <Trophy className="mr-2 h-4 w-4" />
-              Leaderboard will be available here.
-            </div>
+            <AppEmptyState
+              icon={Trophy}
+              title="Leaderboard is not live yet."
+              description="For now, focus on building a steady submission history. Ranking can come later."
+              className="min-h-32"
+            />
           </div>
         </div>
       </div>

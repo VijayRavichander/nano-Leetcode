@@ -1,4 +1,5 @@
 import NavBar from "@/components/Navbar";
+import OnboardingGate from "@/components/OnboardingGate";
 
 export default function ProblemWorkspaceLayout({
   children,
@@ -11,6 +12,7 @@ export default function ProblemWorkspaceLayout({
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--app-panel)]">
         {children}
       </div>
+      <OnboardingGate />
     </div>
   );
 }

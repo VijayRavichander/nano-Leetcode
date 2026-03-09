@@ -1,7 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { ArrowDown, Loader2 } from "lucide-react";
+import { ArrowDown, Loader2, LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +18,7 @@ import {
   DEFAULT_AI_MODEL_ID,
   isAIModelId,
 } from "@/lib/ai/models";
+import { useAppSession } from "@/lib/auth/client-session";
 import { useCurrentCode, useLangStore } from "@/lib/store/codeStore";
 import { useAIChatStore } from "@/lib/store/aiChatStore";
 import type { ProblemDetail } from "@/lib/types/problem";
@@ -32,6 +34,8 @@ const getDistanceFromBottom = (element: HTMLDivElement) => {
 };
 
 const AIPane = ({ problem }: AIPaneProps) => {
+  const router = useRouter();
+  const session = useAppSession();
   const currentCode = useCurrentCode();
   const language = useLangStore((state) => state.lang);
 
@@ -42,24 +46,28 @@ const AIPane = ({ problem }: AIPaneProps) => {
   const [isNearBottom, setIsNearBottom] = useState(true);
 
   const problemKey = problem.id;
+  const canUseAI = Boolean(session.data);
+  const showLoginGate = !session.isPending && !session.data;
 
   const persistedChat = useMemo(
-    () => useAIChatStore.getState().chatsByProblem[problemKey],
-    [problemKey]
+    () => (canUseAI ? useAIChatStore.getState().chatsByProblem[problemKey] : undefined),
+    [canUseAI, problemKey],
   );
 
-  const initialMessages = persistedChat?.messages ?? [];
-  const persistedModelId = isAIModelId(persistedChat?.modelId)
-    ? persistedChat.modelId
-    : DEFAULT_AI_MODEL_ID;
+  const initialMessages = canUseAI ? persistedChat?.messages ?? [] : [];
+  const persistedModelId =
+    canUseAI && isAIModelId(persistedChat?.modelId)
+      ? persistedChat.modelId
+      : DEFAULT_AI_MODEL_ID;
 
   const [selectedModelId, setSelectedModelId] = useState<string>(persistedModelId);
 
   const { messages, sendMessage, status, error } = useChat({
-    id: `problem-ai:${problemKey}`,
+    id: `problem-ai:${problemKey}:${session.data?.session.userId ?? "guest"}`,
     messages: initialMessages,
   });
 
+  const visibleMessages = canUseAI ? messages : [];
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isGenerating = status === "submitted" || status === "streaming";
@@ -94,12 +102,20 @@ const AIPane = ({ problem }: AIPaneProps) => {
   }, [persistedModelId, problemKey]);
 
   useEffect(() => {
+    if (!canUseAI) {
+      return;
+    }
+
     setMessagesForProblem(problemKey, messages);
-  }, [messages, problemKey, setMessagesForProblem]);
+  }, [canUseAI, messages, problemKey, setMessagesForProblem]);
 
   useEffect(() => {
+    if (!canUseAI) {
+      return;
+    }
+
     setModelForProblem(problemKey, selectedModelId);
-  }, [problemKey, selectedModelId, setModelForProblem]);
+  }, [canUseAI, problemKey, selectedModelId, setModelForProblem]);
 
   useEffect(() => {
     syncScrollState();
@@ -107,12 +123,12 @@ const AIPane = ({ problem }: AIPaneProps) => {
     if (isNearBottom) {
       scrollToBottom("auto");
     }
-  }, [isNearBottom, messages, scrollToBottom, status, syncScrollState]);
+  }, [isNearBottom, scrollToBottom, status, syncScrollState, visibleMessages]);
 
   const submitMessage = useCallback(async () => {
     const nextInput = input.trim();
 
-    if (!nextInput || isGenerating) {
+    if (!canUseAI || !nextInput || isGenerating) {
       return;
     }
 
@@ -132,11 +148,12 @@ const AIPane = ({ problem }: AIPaneProps) => {
             code: currentCode,
           },
         },
-      }
+      },
     );
 
     setInput("");
   }, [
+    canUseAI,
     currentCode,
     input,
     isGenerating,
@@ -161,12 +178,14 @@ const AIPane = ({ problem }: AIPaneProps) => {
           onScroll={syncScrollState}
           className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-4 py-3"
         >
-          {messages.length === 0 ? (
-            <div className="app-empty-state flex min-h-28 items-center justify-center rounded-lg px-3 py-6 text-sm">
-              Ask for hints, complexity analysis, or debugging help.
+          {visibleMessages.length === 0 ? (
+            <div className="app-empty-state flex min-h-28 items-center justify-center rounded-lg px-3 py-6 text-center text-sm">
+              {showLoginGate
+                ? "Sign in to ask for hints, debugging help, and complexity guidance."
+                : "Ask for hints, complexity analysis, or debugging help."}
             </div>
           ) : (
-            messages.map((message) => {
+            visibleMessages.map((message) => {
               const messageText = message.parts
                 .map((part) => (part.type === "text" ? part.text : ""))
                 .join("")
@@ -191,9 +210,7 @@ const AIPane = ({ problem }: AIPaneProps) => {
                     <p className="whitespace-pre-wrap">{messageText}</p>
                   ) : (
                     <div className="editorial-markdown text-[var(--app-text)]/88">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {messageText}
-                      </ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
                     </div>
                   )}
                 </article>
@@ -201,21 +218,21 @@ const AIPane = ({ problem }: AIPaneProps) => {
             })
           )}
 
-          {isGenerating ? (
+          {canUseAI && isGenerating ? (
             <div className="mr-auto flex max-w-[92%] items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-3 py-2 text-xs text-[var(--app-muted)]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Streaming response...
             </div>
           ) : null}
 
-          {error ? (
+          {canUseAI && error ? (
             <div className="rounded-lg border border-[var(--app-danger-text)]/35 bg-[var(--app-danger-bg)] px-3 py-2 text-xs text-[var(--app-danger-text)]">
               {error.message || "Something went wrong while generating the response."}
             </div>
           ) : null}
         </div>
 
-        {!isNearBottom && messages.length > 0 ? (
+        {!showLoginGate && !isNearBottom && visibleMessages.length > 0 ? (
           <button
             type="button"
             onClick={() => scrollToBottom("smooth")}
@@ -239,7 +256,11 @@ const AIPane = ({ problem }: AIPaneProps) => {
             <span className="text-[10px] font-semibold tracking-wide text-[var(--app-muted)]">
               Model
             </span>
-            <Select value={selectedModelId} onValueChange={setSelectedModelId}>
+            <Select
+              value={selectedModelId}
+              onValueChange={setSelectedModelId}
+              disabled={!canUseAI || session.isPending}
+            >
               <SelectTrigger className="h-7 w-[170px] border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2 text-[11px] text-[var(--app-text)] shadow-none focus:ring-0">
                 <SelectValue placeholder="Choose model" />
               </SelectTrigger>
@@ -265,21 +286,42 @@ const AIPane = ({ problem }: AIPaneProps) => {
               }
             }}
             rows={3}
-            placeholder="Message the assistant..."
-            className="h-20 w-full resize-none border-none bg-[var(--app-panel)] px-3 py-2 text-sm text-[var(--app-text)] placeholder:text-[var(--app-muted)]/65 focus:outline-none"
+            disabled={!canUseAI || session.isPending}
+            placeholder={
+              showLoginGate ? "Sign in to message the assistant..." : "Message the assistant..."
+            }
+            className="h-20 w-full resize-none border-none bg-[var(--app-panel)] px-3 py-2 text-sm text-[var(--app-text)] placeholder:text-[var(--app-muted)]/65 focus:outline-none disabled:cursor-not-allowed disabled:text-[var(--app-muted)]"
           />
 
           <div className="flex items-center justify-between border-t border-[var(--app-border)] px-2 py-1.5">
-            <span className="text-[10px] text-[var(--app-muted)]">
-              Press Enter to send, Shift+Enter for newline
-            </span>
-            <button
-              type="submit"
-              disabled={!input.trim() || isGenerating}
-              className="app-text-action rounded-md border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2.5 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-55"
-            >
-              {isGenerating ? "Streaming..." : "Send"}
-            </button>
+            {showLoginGate ? (
+              <>
+                <span className="text-[10px] text-[var(--app-muted)]">
+                  Sign in to unlock AI help for this problem.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => router.push("/signin")}
+                  className="app-text-action rounded-md border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2.5 py-1 text-[11px] font-medium"
+                >
+                  <LogIn className="h-3.5 w-3.5" />
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="text-[10px] text-[var(--app-muted)]">
+                  Press Enter to send, Shift+Enter for newline
+                </span>
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isGenerating || !canUseAI}
+                  className="app-text-action rounded-md border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2.5 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  {isGenerating ? "Streaming..." : "Send"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </form>

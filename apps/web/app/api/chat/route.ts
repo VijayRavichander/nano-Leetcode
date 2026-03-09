@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   convertToModelMessages,
   streamText,
   type UIMessage,
 } from "ai";
 import { isAIModelId } from "@/lib/ai/models";
+import { getServerSession } from "@/lib/auth/server-session";
 import { getChatModel } from "./lib";
 
 interface ProblemChatContext {
@@ -93,8 +94,14 @@ const buildSystemPrompt = (context?: ProblemChatContext) => {
   ].join("\n");
 };
 
-export const POST = async (request: Request): Promise<Response> => {
+export const POST = async (request: NextRequest): Promise<Response> => {
   try {
+    const session = await getServerSession(request);
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = (await request.json()) as ChatRequestBody;
     const messages = body.messages;
 
