@@ -1,9 +1,9 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { ArrowDown, Loader2, LogIn } from "lucide-react";
+import { SendHorizontal, ArrowDown, Loader2, LogIn, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -33,14 +33,95 @@ const getDistanceFromBottom = (element: HTMLDivElement) => {
   return element.scrollHeight - element.scrollTop - element.clientHeight;
 };
 
+const KEYWORDS = new Set([
+  "const",
+  "let",
+  "var",
+  "function",
+  "return",
+  "if",
+  "else",
+  "for",
+  "while",
+  "switch",
+  "case",
+  "break",
+  "continue",
+  "class",
+  "new",
+  "try",
+  "catch",
+  "finally",
+  "import",
+  "from",
+  "export",
+  "default",
+  "public",
+  "private",
+  "protected",
+  "static",
+  "void",
+  "int",
+  "float",
+  "double",
+  "string",
+  "boolean",
+  "true",
+  "false",
+  "null",
+  "undefined",
+  "None",
+  "def",
+  "async",
+  "await",
+]);
+
+const highlightCode = (source: string) => {
+  const lines = source.split("\n");
+
+  return lines.map((line, lineIndex) => {
+    const tokens = line.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/\/.*$|#.*$|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b|\s+|./gmu) ?? [line];
+
+    return (
+      <Fragment key={`line-${lineIndex}`}>
+        {tokens.map((token, index) => {
+          let className = "text-[var(--app-text)]";
+
+          if (/^(\/\/|#)/.test(token)) {
+            className = "text-[#6a9955]";
+          } else if (/^("|'|`).*("|'|`)$/u.test(token)) {
+            className = "text-[#ce9178]";
+          } else if (/^\d/u.test(token)) {
+            className = "text-[#b5cea8]";
+          } else if (KEYWORDS.has(token)) {
+            className = "text-[#569cd6]";
+          }
+
+          return (
+            <span key={`token-${lineIndex}-${index}`} className={className}>
+              {token}
+            </span>
+          );
+        })}
+        {lineIndex < lines.length - 1 ? "\n" : null}
+      </Fragment>
+    );
+  });
+};
+
 const AIPane = ({ problem }: AIPaneProps) => {
   const router = useRouter();
   const session = useAppSession();
   const currentCode = useCurrentCode();
   const language = useLangStore((state) => state.lang);
 
-  const setMessagesForProblem = useAIChatStore((state) => state.setMessagesForProblem);
-  const setModelForProblem = useAIChatStore((state) => state.setModelForProblem);
+  const chatsByProblem = useAIChatStore((state) => state.chatsByProblem);
+  const createSession = useAIChatStore((state) => state.createSession);
+  const setActiveSession = useAIChatStore((state) => state.setActiveSession);
+  const setMessagesForSession = useAIChatStore(
+    (state) => state.setMessagesForSession
+  );
+  const setModelForSession = useAIChatStore((state) => state.setModelForSession);
 
   const [input, setInput] = useState("");
   const [isNearBottom, setIsNearBottom] = useState(true);
@@ -49,26 +130,32 @@ const AIPane = ({ problem }: AIPaneProps) => {
   const canUseAI = Boolean(session.data);
   const showLoginGate = !session.isPending && !session.data;
 
-  const persistedChat = useMemo(
-    () => (canUseAI ? useAIChatStore.getState().chatsByProblem[problemKey] : undefined),
-    [canUseAI, problemKey],
+  const problemChat = canUseAI ? chatsByProblem[problemKey] : undefined;
+  const activeSession = useMemo(() => {
+    if (!problemChat || !problemChat.activeSessionId) {
+      return undefined;
+    }
+
+    return problemChat.sessions.find(
+      (chatSession) => chatSession.id === problemChat.activeSessionId
+    );
+  }, [problemChat]);
+
+  const activeSessionId = activeSession?.id;
+
+  const [selectedModelId, setSelectedModelId] = useState<string>(
+    activeSession && isAIModelId(activeSession.modelId)
+      ? activeSession.modelId
+      : DEFAULT_AI_MODEL_ID
   );
 
-  const initialMessages = canUseAI ? persistedChat?.messages ?? [] : [];
-  const persistedModelId =
-    canUseAI && isAIModelId(persistedChat?.modelId)
-      ? persistedChat.modelId
-      : DEFAULT_AI_MODEL_ID;
-
-  const [selectedModelId, setSelectedModelId] = useState<string>(persistedModelId);
-
   const { messages, sendMessage, status, error } = useChat({
-    id: `problem-ai:${problemKey}:${session.data?.session.userId ?? "guest"}`,
-    messages: initialMessages,
+    id: `problem-ai:${problemKey}:${session.data?.session.userId ?? "guest"}:${activeSessionId ?? "session"}`,
+    messages: activeSession?.messages ?? [],
   });
 
-  const visibleMessages = canUseAI ? messages : [];
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isGenerating = status === "submitted" || status === "streaming";
 
@@ -96,26 +183,54 @@ const AIPane = ({ problem }: AIPaneProps) => {
   }, []);
 
   useEffect(() => {
-    setSelectedModelId(persistedModelId);
+    if (!canUseAI || problemChat?.sessions.length) {
+      return;
+    }
+
+    createSession(problemKey);
+  }, [canUseAI, createSession, problemChat?.sessions.length, problemKey]);
+
+  useEffect(() => {
+    setSelectedModelId(
+      activeSession && isAIModelId(activeSession.modelId)
+        ? activeSession.modelId
+        : DEFAULT_AI_MODEL_ID
+    );
     setInput("");
     setIsNearBottom(true);
-  }, [persistedModelId, problemKey]);
+
+    if (activeSessionId) {
+      inputRef.current?.focus();
+    }
+  }, [activeSession, activeSessionId, problemKey]);
 
   useEffect(() => {
-    if (!canUseAI) {
+    if (!canUseAI || !activeSessionId) {
       return;
     }
 
-    setMessagesForProblem(problemKey, messages);
-  }, [canUseAI, messages, problemKey, setMessagesForProblem]);
+    setMessagesForSession(problemKey, activeSessionId, messages);
+  }, [
+    activeSessionId,
+    canUseAI,
+    messages,
+    problemKey,
+    setMessagesForSession,
+  ]);
 
   useEffect(() => {
-    if (!canUseAI) {
+    if (!canUseAI || !activeSessionId) {
       return;
     }
 
-    setModelForProblem(problemKey, selectedModelId);
-  }, [canUseAI, problemKey, selectedModelId, setModelForProblem]);
+    setModelForSession(problemKey, activeSessionId, selectedModelId);
+  }, [
+    activeSessionId,
+    canUseAI,
+    problemKey,
+    selectedModelId,
+    setModelForSession,
+  ]);
 
   useEffect(() => {
     syncScrollState();
@@ -123,12 +238,12 @@ const AIPane = ({ problem }: AIPaneProps) => {
     if (isNearBottom) {
       scrollToBottom("auto");
     }
-  }, [isNearBottom, scrollToBottom, status, syncScrollState, visibleMessages]);
+  }, [isNearBottom, messages, scrollToBottom, status, syncScrollState]);
 
   const submitMessage = useCallback(async () => {
     const nextInput = input.trim();
 
-    if (!canUseAI || !nextInput || isGenerating) {
+    if (!canUseAI || !activeSessionId || !nextInput || isGenerating) {
       return;
     }
 
@@ -148,11 +263,12 @@ const AIPane = ({ problem }: AIPaneProps) => {
             code: currentCode,
           },
         },
-      },
+      }
     );
 
     setInput("");
   }, [
+    activeSessionId,
     canUseAI,
     currentCode,
     input,
@@ -168,9 +284,46 @@ const AIPane = ({ problem }: AIPaneProps) => {
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--app-panel)]">
-      <header className="flex h-11 items-center border-b border-[var(--app-editor-border)] bg-[var(--app-chrome)] px-3.5">
+      <header className="flex h-11 items-center justify-between border-b border-[var(--app-editor-border)] bg-[var(--app-chrome)] px-3.5">
         <h2 className="text-sm font-medium text-[var(--app-muted)]">AI Assistant</h2>
+        {!showLoginGate ? (
+          <button
+            type="button"
+            onClick={() => {
+              createSession(problemKey);
+            }}
+            className="app-text-action rounded-md border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2 py-1 text-[11px]"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New chat
+          </button>
+        ) : null}
       </header>
+
+      {!showLoginGate && problemChat?.sessions.length ? (
+        <div className="flex items-center gap-1 overflow-x-auto border-b border-[var(--app-border)] px-2 py-1.5">
+          {problemChat.sessions.map((chatSession) => {
+            const isActive = chatSession.id === activeSessionId;
+
+            return (
+              <button
+                key={chatSession.id}
+                type="button"
+                onClick={() => {
+                  setActiveSession(problemKey, chatSession.id);
+                }}
+                className={`rounded-md border px-2.5 py-1 text-[11px] transition-colors ${
+                  isActive
+                    ? "border-[var(--app-accent)]/40 bg-[var(--app-accent-soft)] text-[var(--app-text)]"
+                    : "border-[var(--app-border)] bg-[var(--app-panel-muted)] text-[var(--app-muted)] hover:text-[var(--app-text)]"
+                }`}
+              >
+                {chatSession.title}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div
@@ -178,14 +331,14 @@ const AIPane = ({ problem }: AIPaneProps) => {
           onScroll={syncScrollState}
           className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-4 py-3"
         >
-          {visibleMessages.length === 0 ? (
+          {messages.length === 0 ? (
             <div className="app-empty-state flex min-h-28 items-center justify-center rounded-lg px-3 py-6 text-center text-sm">
               {showLoginGate
                 ? "Sign in to ask for hints, debugging help, and complexity guidance."
                 : "Ask for hints, complexity analysis, or debugging help."}
             </div>
           ) : (
-            visibleMessages.map((message) => {
+            messages.map((message) => {
               const messageText = message.parts
                 .map((part) => (part.type === "text" ? part.text : ""))
                 .join("")
@@ -210,20 +363,41 @@ const AIPane = ({ problem }: AIPaneProps) => {
                     <p className="whitespace-pre-wrap">{messageText}</p>
                   ) : (
                     <div className="editorial-markdown text-[var(--app-text)]/88">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          pre({ children }) {
+                            return <>{children}</>;
+                          },
+                          code({ className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(className || "");
+
+                            if (match) {
+                              return (
+                                <pre className="rounded-xl border border-[var(--app-border)] bg-[#0f172a] p-3 text-xs leading-6 text-slate-100">
+                                  <code className="whitespace-pre-wrap" {...props}>
+                                    {highlightCode(String(children).replace(/\n$/, ""))}
+                                  </code>
+                                </pre>
+                              );
+                            }
+
+                            return (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
+                          },
+                        }}
+                      >
+                        {messageText}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </article>
               );
             })
           )}
-
-          {canUseAI && isGenerating ? (
-            <div className="mr-auto flex max-w-[92%] items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-3 py-2 text-xs text-[var(--app-muted)]">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Streaming response...
-            </div>
-          ) : null}
 
           {canUseAI && error ? (
             <div className="rounded-lg border border-[var(--app-danger-text)]/35 bg-[var(--app-danger-bg)] px-3 py-2 text-xs text-[var(--app-danger-text)]">
@@ -232,7 +406,7 @@ const AIPane = ({ problem }: AIPaneProps) => {
           ) : null}
         </div>
 
-        {!showLoginGate && !isNearBottom && visibleMessages.length > 0 ? (
+        {!showLoginGate && !isNearBottom && messages.length > 0 ? (
           <button
             type="button"
             onClick={() => scrollToBottom("smooth")}
@@ -275,6 +449,7 @@ const AIPane = ({ problem }: AIPaneProps) => {
           </div>
 
           <textarea
+            ref={inputRef}
             value={input}
             onChange={(event) => {
               setInput(event.target.value);
@@ -315,10 +490,17 @@ const AIPane = ({ problem }: AIPaneProps) => {
                 </span>
                 <button
                   type="submit"
-                  disabled={!input.trim() || isGenerating || !canUseAI}
+                  disabled={!input.trim() || isGenerating || !canUseAI || !activeSessionId}
+                  aria-label={
+                    isGenerating ? "Assistant is streaming response" : "Send message"
+                  }
                   className="app-text-action rounded-md border border-[var(--app-border)] bg-[var(--app-panel-muted)] px-2.5 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-55"
                 >
-                  {isGenerating ? "Streaming..." : "Send"}
+                  {isGenerating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <SendHorizontal className="h-3.5 w-3.5" />
+                  )}
                 </button>
               </>
             )}
