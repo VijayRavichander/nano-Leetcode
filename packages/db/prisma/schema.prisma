@@ -8,19 +8,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt DateTime
-  updatedAt DateTime
-
+  id            String       @id @default(uuid()) @db.Uuid
+  createdAt     DateTime
+  updatedAt     DateTime
   name          String
-  type          String  @default("user")
-  email         String  @unique
+  type          String       @default("user")
+  email         String       @unique
   emailVerified Boolean
   image         String?
-
-  sessions    Session[]
-  accounts    Account[]
-  submissions Submission[]
+  submissions   Submission[]
+  accounts      Account[]
+  sessions      Session[]
 
   @@map("users")
 }
@@ -29,24 +27,21 @@ model Session {
   id             String   @id @default(uuid()) @db.Uuid
   createdAt      DateTime
   updatedAt      DateTime
-
   expiresAt      DateTime
   token          String   @unique
   ipAddress      String?
   userAgent      String?
   impersonatedBy String?
-
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model Account {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt DateTime
-  updatedAt DateTime
-
+  id                    String    @id @default(uuid()) @db.Uuid
+  createdAt             DateTime
+  updatedAt             DateTime
   accountId             String
   providerId            String
   accessToken           String?
@@ -56,18 +51,16 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("accounts")
 }
 
 model Verification {
-  id        String    @id @default(uuid()) @db.Uuid
-  createdAt DateTime?
-  updatedAt DateTime?
-
+  id         String    @id @default(uuid()) @db.Uuid
+  createdAt  DateTime?
+  updatedAt  DateTime?
   identifier String
   value      String
   expiresAt  DateTime
@@ -76,53 +69,40 @@ model Verification {
 }
 
 model Problem {
-  id          String   @id @default(uuid()) @db.Uuid
-  tags        String[]
-  title       String
-  difficulty  String
-  constraints String[]
-  description String
-  editorial   String   @default("")
-  testCases   Json?
-  slug        String   @unique
-  type        String   @default("None") // Contest, Non_Contest
-  solved      Int      @default(0)
-
-  // Test Cases
+  id               String       @id @default(uuid()) @db.Uuid
+  tags             String[]
+  title            String
+  difficulty       String
+  constraints      String[]
+  description      String
+  testCases        Json?
+  slug             String       @unique
+  type             String       @default("None")
+  solved           Int          @default(0)
   visibleTestCases Json?
   hiddenTestCases  Json?
-
-  // CodeEditor Boilerplate Code
-  functionCode Json?
-
-  // Embedded array
-  completeCode Json?
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  submissions Submission[]
+  functionCode     Json?
+  completeCode     Json?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  editorial        String       @default("")
+  submissions      Submission[]
 }
 
 model Submission {
-  id          String           @id @default(uuid()) @db.Uuid
-  code        String
-  languageId  Int
-  status      SubmissionResult @default(PENDING)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  judgetokens String[]
-
-  max_cpu_time Int? @default(-1)
-  max_memory   Int? @default(-1)
-
-  // References to other collections
-  problemId String  @db.Uuid
-  userId    String  @db.Uuid
-  problem   Problem @relation(fields: [problemId], references: [id])
-  user      User    @relation(fields: [userId], references: [id])
+  id           String           @id @default(uuid()) @db.Uuid
+  code         String
+  languageId   Int
+  status       SubmissionResult @default(PENDING)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  judgetokens  String[]
+  max_cpu_time Float?           @default(-1)
+  max_memory   Int?             @default(-1)
+  problemId    String           @db.Uuid
+  userId       String           @db.Uuid
+  problem      Problem          @relation(fields: [problemId], references: [id])
+  user         User             @relation(fields: [userId], references: [id])
 }
 
 enum SubmissionResult {
@@ -130,6 +110,7 @@ enum SubmissionResult {
   REJECTED
   PENDING
   TLE
+  MEMORYLIMITEXCEEDED
   COMPILATIONERROR
   RUNTIMEERROR
   INTERNALERROR

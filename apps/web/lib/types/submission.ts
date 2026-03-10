@@ -3,9 +3,15 @@ export type SubmissionStatus =
   | "REJECTED"
   | "PENDING"
   | "TLE"
+  | "MEMORYLIMITEXCEEDED"
   | "COMPILATIONERROR"
   | "RUNTIMEERROR"
   | "INTERNALERROR";
+
+export interface SubmissionMetrics {
+  time: number;
+  memory: number;
+}
 
 export interface RunResultItem {
   id: number;
@@ -37,4 +43,5 @@ export interface SubmissionPageResponse {
 
 export interface SubmissionStatusResponse {
   status: SubmissionStatus;
+  metrics: SubmissionMetrics | null;
 }

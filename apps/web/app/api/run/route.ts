@@ -24,13 +24,15 @@ interface Judge0Status {
 interface RunResult {
   id: number;
   description: string;
-  time: number, 
-  memory: number, 
-  stdout: string
+  time: number;
+  memory: number;
+  stdout: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
+    assertJudge0Config();
+
     const session = await getServerSession(req);
 
     if (!session) {
@@ -88,8 +90,6 @@ export async function POST(req: NextRequest) {
 
     const finalCode = template.replace("##USER_CODE_HERE##", userCode);
 
-    console.log(finalCode);
-
     if (!finalCode) {
       return NextResponse.json(
         { error: "Something went wrong" },
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     for (const testcase of testCases) {
       try {
         const response = await axios.post(
-          `${JUDGE0_URL}/submissions/?base64_encoded=true&wait=true`,
+          `${JUDGE0_URL}/submissions/?base64_encoded=true&wait=true&fields=status,time,memory,stdout`,
           {
             source_code: base64FinalCode,
             language_id: languageId,
@@ -120,8 +120,6 @@ export async function POST(req: NextRequest) {
           }
         );
 
-        console.log(response.data)  
-
         if (response.status !== 200 || response.data?.error) {
           runResults.push({ id: -1, description: "Failed", time: -1, memory: -1, stdout: "" });
         } else {
@@ -129,7 +127,7 @@ export async function POST(req: NextRequest) {
           runResults.push({
             id: status?.id ?? 0,
             description: status?.description ?? "Unknown",
-            time: parseInt(response.data.time) ?? -1, 
+            time: parseJudge0Time(response.data?.time),
             memory: response.data.memory ?? -1,
             stdout: response.data.stdout ?? ""
           });
@@ -149,3 +147,14 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+const parseJudge0Time = (value: string | null | undefined) => {
+  const parsed = Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? parsed : -1;
+};
+
+const assertJudge0Config = () => {
+  if (!JUDGE0_URL || !JUDGE0_API_KEY || !JUDGE0_HOST) {
+    throw new Error("Missing Judge0 configuration");
+  }
+};

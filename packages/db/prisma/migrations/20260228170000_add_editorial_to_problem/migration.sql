@@ -1,2 +1,2 @@
-ALTER TABLE "Problem"
-ADD COLUMN "editorial" TEXT NOT NULL DEFAULT '';
+-- No-op migration retained to keep Prisma migration history consistent.
+-- The baseline migration now includes the `editorial` column on `Problem`.

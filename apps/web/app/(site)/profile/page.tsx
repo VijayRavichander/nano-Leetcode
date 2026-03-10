@@ -8,25 +8,10 @@ import AppEmptyState from "@/components/AppEmptyState";
 import ContributionHeatmap from "@/components/ContributionHeatmap";
 import Loader from "@/components/Loader";
 import { formatSubmissionStatus } from "@/components/submission/submissionCard";
+import { formatMemory, formatRuntime } from "@/lib/submission-metrics";
 import { useAppSession } from "@/lib/auth/client-session";
 import { getProfileSummary } from "@/lib/api/profile";
 import type { ProfileSummaryResponse } from "@/lib/types/profile";
-
-function formatRuntime(value: number | null) {
-  if (value == null || value === -1) {
-    return "Runtime unavailable";
-  }
-
-  return `${value * 1000} ms`;
-}
-
-function formatMemory(value: number | null) {
-  if (value == null || value === -1) {
-    return "Memory unavailable";
-  }
-
-  return `${value} KB`;
-}
 
 export default function Profile() {
   const router = useRouter();

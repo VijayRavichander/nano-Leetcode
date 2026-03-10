@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { CheckIcon, X } from "lucide-react";
+import { formatMemory, formatRuntime } from "@/lib/submission-metrics";
 import { useExecutionStore, useTestCaseStatusForSlug } from "@/lib/store/executionStore";
 import type { VisibleTestCase } from "@/lib/types/problem";
 
@@ -75,6 +76,16 @@ const buildTestCaseKey = (testCase: VisibleTestCase, index: number): string => {
   return `${index}-${testCase.input}-${testCase.output}`;
 };
 
+const getWorstMetric = (values: number[]) => {
+  const availableValues = values.filter((value) => Number.isFinite(value) && value >= 0);
+
+  if (!availableValues.length) {
+    return null;
+  }
+
+  return availableValues.reduce((max, current) => (current > max ? current : max), availableValues[0]!);
+};
+
 const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) => {
   const isRunning = useExecutionStore((state) => state.isRunning);
   const testCaseStatus = useTestCaseStatusForSlug(problemSlug);
@@ -82,6 +93,15 @@ const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) =
   const sampleTestCases = Array.isArray(problemDesc.sampleTestCase)
     ? problemDesc.sampleTestCase
     : [];
+  const visibleRunSummary =
+    testCaseStatus.length > 0
+      ? {
+          passed: testCaseStatus.filter((status) => status.description === "Accepted").length,
+          total: testCaseStatus.length,
+          worstTime: getWorstMetric(testCaseStatus.map((status) => status.time)),
+          worstMemory: getWorstMetric(testCaseStatus.map((status) => status.memory)),
+        }
+      : null;
 
   if (sampleTestCases.length === 0 || isRunning) {
     return <SubmissionResultSkeleton />;
@@ -91,6 +111,29 @@ const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) =
     <div className="h-full overflow-auto bg-[var(--app-panel)]">
       <div className="h-full overflow-auto">
         <div className="px-3.5 py-3 text-sm">
+          {visibleRunSummary ? (
+            <div className="mb-3 grid gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-muted)] p-3 text-xs text-[var(--app-muted)] md:grid-cols-3">
+              <div>
+                <span className="block text-[10px] uppercase tracking-[0.16em]">Visible tests</span>
+                <span className="mt-1 block text-sm font-medium text-[var(--app-text)]">
+                  {visibleRunSummary.passed}/{visibleRunSummary.total} passed
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] uppercase tracking-[0.16em]">Worst runtime</span>
+                <span className="mt-1 block text-sm font-medium text-[var(--app-text)]">
+                  {formatRuntime(visibleRunSummary.worstTime, "--")}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] uppercase tracking-[0.16em]">Worst memory</span>
+                <span className="mt-1 block text-sm font-medium text-[var(--app-text)]">
+                  {formatMemory(visibleRunSummary.worstMemory, "--")}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           <Tabs defaultValue="0" className="text-sm text-[var(--app-muted)]">
             <div data-results-controls className="rounded-xl bg-[var(--app-panel)]">
               <TabsList className="bg-[var(--app-panel-muted)] p-1.5">
@@ -141,8 +184,9 @@ const SubmissionResult = ({ problemDesc, problemSlug }: SubmissionResultProps) =
                       <div className={`text-base font-semibold ${statusColor}`}>
                         {status?.description ?? "Not run"}
                       </div>
-                      <div className="text-xs text-[var(--app-muted)]">
-                        {status ? `Runtime: ${status.time * 1000} ms` : "Runtime: --"}
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--app-muted)]">
+                        <span>Runtime: {formatRuntime(status?.time, "--")}</span>
+                        <span>Memory: {formatMemory(status?.memory, "--")}</span>
                       </div>
                     </div>
 

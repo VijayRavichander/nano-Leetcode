@@ -139,13 +139,15 @@ const NavBar = ({ workspace = false }: NavBarProps) => {
 
     const statusResponse = await getSubmissionStatus(submitResponse.data.submissionId);
 
-    if (statusResponse.ok && statusResponse.data.status === "ACCEPTED") {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: getThemeConfettiColors(),
-      });
+    if (statusResponse.ok) {
+      if (statusResponse.data.status === "ACCEPTED") {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: getThemeConfettiColors(),
+        });
+      }
     }
 
     focusTab("submissions");

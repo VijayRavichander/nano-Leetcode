@@ -5,6 +5,7 @@ import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { X, Clock, Gauge, Copy, Check } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useOnClickOutside } from "usehooks-ts";
+import { formatMemory, formatRuntime } from "@/lib/submission-metrics";
 import { formatSubmissionStatus } from "./submissionCard";
 import type { SubmissionListItem } from "@/lib/types/submission";
 
@@ -154,18 +155,14 @@ const SubmissionDetailsModal = ({
                   <Clock className="h-4 w-4 text-[var(--app-accent)]" />
                   <span className="text-[var(--app-muted)]">Runtime</span>
                   <span className="font-medium text-[var(--app-text)]">
-                    {submission.max_cpu_time != null && submission.max_cpu_time !== -1
-                      ? `${submission.max_cpu_time * 1000} ms`
-                      : "Not available"}
+                    {formatRuntime(submission.max_cpu_time, "Not available")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Gauge className="h-4 w-4 text-[var(--app-success-text)]" />
                   <span className="text-[var(--app-muted)]">Memory</span>
                   <span className="font-medium text-[var(--app-text)]">
-                    {submission.max_memory != null && submission.max_memory !== -1
-                      ? `${submission.max_memory} KB`
-                      : "Not available"}
+                    {formatMemory(submission.max_memory, "Not available")}
                   </span>
                 </div>
               </motion.div>

@@ -9,6 +9,7 @@ export enum SubmissionResult {
   REJECTED = "REJECTED",
   PENDING = "PENDING",
   TLE = "TLE",
+  MEMORYLIMITEXCEEDED = "MEMORYLIMITEXCEEDED",
   COMPILATIONERROR = "COMPILATIONERROR",
   RUNTIMEERROR = "RUNTIMEERROR",
   INTERNALERROR = "INTERNALERROR",
@@ -44,13 +45,8 @@ const JUDGE0_STATUS_MAP: Record<string, SubmissionResult> = {
   Accepted: SubmissionResult.ACCEPTED,
   "Wrong Answer": SubmissionResult.REJECTED,
   "Time Limit Exceeded": SubmissionResult.TLE,
+  "Memory Limit Exceeded": SubmissionResult.MEMORYLIMITEXCEEDED,
   "Compilation Error": SubmissionResult.COMPILATIONERROR,
-  "Runtime error (SIGSEGV)": SubmissionResult.RUNTIMEERROR,
-  "Runtime error (SIGXFSZ)": SubmissionResult.RUNTIMEERROR,
-  "Runtime error (SIGFPE)": SubmissionResult.RUNTIMEERROR,
-  "Runtime error (SIGABRT)": SubmissionResult.RUNTIMEERROR,
-  "Runtime error (NZEC)": SubmissionResult.RUNTIMEERROR,
-  "Runtime error (Other)": SubmissionResult.RUNTIMEERROR,
 };
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -90,12 +86,8 @@ export const checkSubmissionStatus = async (tokenQuery: string): Promise<Submiss
 };
 
 const fetchSubmissions = async (tokenQuery: string): Promise<Judge0Submission[]> => {
-
-  console.log("Token Query: ")
-  console.log(tokenQuery)
-
   const response = await axios.get<Judge0Response>(
-    `${JUDGE0_URL}/submissions/batch?tokens=${tokenQuery}&base64_encoded=true`,
+    `${JUDGE0_URL}/submissions/batch?tokens=${tokenQuery}&base64_encoded=true&fields=status,time,memory`,
     {
       headers: {
         "x-rapidapi-key": JUDGE0_API_KEY!,
@@ -112,8 +104,6 @@ const evaluateSubmissions = (submissions: Judge0Submission[]) => {
   const metrics: { memory: number[]; time: number[] } = { memory: [], time: [] };
 
   for (const submission of submissions) {
-    console.log("Submission Status")
-    console.log(submission.status)
     const description = submission.status.description;
 
     if (PROCESSING_STATUSES.has(description)) {
@@ -135,7 +125,7 @@ const evaluateSubmissions = (submissions: Judge0Submission[]) => {
     }
 
     metrics.memory.push(submission.memory ?? 0);
-    metrics.time.push(parseFloat(submission.time ?? "0"));
+    metrics.time.push(parseJudge0Time(submission.time));
   }
 
   return {
@@ -149,11 +139,25 @@ const evaluateSubmissions = (submissions: Judge0Submission[]) => {
 };
 
 const mapJudge0Status = (description: string): SubmissionResult => {
+  if (description.toLowerCase().startsWith("runtime error")) {
+    return SubmissionResult.RUNTIMEERROR;
+  }
+
   return JUDGE0_STATUS_MAP[description] ?? SubmissionResult.INTERNALERROR;
 };
 
+const parseJudge0Time = (value: string | null | undefined): number => {
+  const parsed = Number.parseFloat(value ?? "");
+
+  if (!Number.isFinite(parsed)) {
+    return -1;
+  }
+
+  return parsed;
+};
+
 const maxValue = (values: number[]): number => {
-  const finiteValues = values.filter(value => Number.isFinite(value));
+  const finiteValues = values.filter(value => Number.isFinite(value) && value >= 0);
 
   if (!finiteValues.length) {
     return -1;

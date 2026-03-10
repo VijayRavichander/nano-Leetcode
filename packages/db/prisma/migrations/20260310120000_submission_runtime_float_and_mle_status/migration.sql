@@ -1,0 +1,8 @@
+ALTER TYPE "SubmissionResult" ADD VALUE 'MEMORYLIMITEXCEEDED';
+
+ALTER TABLE "Submission"
+ALTER COLUMN "max_cpu_time" TYPE DOUBLE PRECISION
+USING "max_cpu_time"::DOUBLE PRECISION;
+
+ALTER TABLE "Submission"
+ALTER COLUMN "max_cpu_time" SET DEFAULT -1;

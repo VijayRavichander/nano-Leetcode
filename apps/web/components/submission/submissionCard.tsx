@@ -1,5 +1,6 @@
-import { Clock, BarChart2, Lock } from "lucide-react";
+import { Clock, BarChart2, Gauge, Lock } from "lucide-react";
 import { Button } from "../ui/button";
+import { formatMemory, formatRuntime } from "@/lib/submission-metrics";
 import type { SubmissionListItem, SubmissionStatus } from "@/lib/types/submission";
 
 export const STATUS_STYLES: Record<
@@ -23,6 +24,10 @@ export const STATUS_STYLES: Record<
   },
   TLE: {
     label: "Time Limit Exceeded",
+    textClass: "text-[var(--app-warning-text)]",
+  },
+  MEMORYLIMITEXCEEDED: {
+    label: "Memory Limit Exceeded",
     textClass: "text-[var(--app-warning-text)]",
   },
   COMPILATIONERROR: {
@@ -84,12 +89,14 @@ const SubmissionCard = ({
           </span>
           <span className="text-xs text-[var(--app-muted)]">{localDateString}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Clock className="h-3 w-3 text-[var(--app-accent)]" />
-          <span className="text-xs text-[var(--app-text)]/82">
-            {submission.max_cpu_time != null && submission.max_cpu_time !== -1
-              ? `${submission.max_cpu_time * 1000} ms`
-              : "NA"}
+        <div className="flex items-center gap-3 text-xs text-[var(--app-text)]/82">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="h-3 w-3 text-[var(--app-accent)]" />
+            {formatRuntime(submission.max_cpu_time, "NA")}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Gauge className="h-3 w-3 text-[var(--app-success-text)]" />
+            {formatMemory(submission.max_memory, "NA")}
           </span>
         </div>
       </div>
