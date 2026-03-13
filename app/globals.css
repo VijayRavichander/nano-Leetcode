@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colors — light cream/off-white palette inspired by soloterm */
+  --color-background: #f5f4f0;
+  --color-surface: #fafaf8;
+  --color-border: #e2e0d9;
+  --color-foreground: #1a1a18;
+  --color-muted: #6b6960;
+  --color-accent: #e8a020;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
